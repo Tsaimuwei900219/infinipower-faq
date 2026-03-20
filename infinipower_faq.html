@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InfiniPower Technical FAQ Assistant</title>
+<style>
+  :root {
+    --primary: #0066cc;
+    --primary-dark: #004fa3;
+    --bg: #f0f4f8;
+    --chat-bg: #ffffff;
+    --user-bubble: #0066cc;
+    --bot-bubble: #f0f4f8;
+    --text: #1a1a2e;
+    --subtext: #6b7280;
+    --border: #d1d5db;
+    --shadow: 0 4px 24px rgba(0,0,0,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', 'Hiragino Sans', 'Malgun Gothic', sans-serif;
+    background: var(--bg);
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh;
+  }
+  header {
+    width: 100%; background: linear-gradient(135deg, #0066cc 0%, #004fa3 100%);
+    padding: 18px 24px; display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .logo { width: 40px; height: 40px; background: white; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo svg { width: 26px; height: 26px; }
+  header h1 { color: white; font-size: 1.15rem; font-weight: 700; line-height: 1.2; }
+  header p { color: rgba(255,255,255,0.80); font-size: 0.78rem; margin-top: 2px; }
+
+  .chat-wrapper {
+    width: 100%; max-width: 780px; flex: 1;
+    display: flex; flex-direction: column; padding: 16px 16px 0;
+  }
+  #chat-box {
+    flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+    padding: 8px 0 16px; min-height: 0;
+  }
+  .msg { display: flex; gap: 8px; max-width: 88%; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .msg.bot { align-self: flex-start; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    margin-top: 2px;
+  }
+  .msg.bot .avatar { background: var(--primary); color: white; font-weight: 700; font-size: 11px; }
+  .msg.user .avatar { background: #374151; color: white; font-size: 13px; }
+  .bubble {
+    padding: 11px 15px; border-radius: 16px; font-size: 0.88rem; line-height: 1.65;
+    max-width: calc(100% - 44px); word-break: break-word;
+  }
+  .msg.user .bubble { background: var(--user-bubble); color: white; border-bottom-right-radius: 4px; }
+  .msg.bot .bubble {
+    background: var(--chat-bg); color: var(--text);
+    border-bottom-left-radius: 4px; border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .bubble strong { font-weight: 600; }
+  .bubble ul { margin: 6px 0 4px 18px; }
+  .bubble li { margin-bottom: 3px; }
+  .bubble .tag {
+    display: inline-block; background: #e8f0fe; color: #1a56db;
+    font-size: 0.75rem; padding: 1px 7px; border-radius: 10px; margin: 2px 2px 0 0;
+    font-weight: 500;
+  }
+  .bubble .spec-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.82rem; }
+  .bubble .spec-table td { padding: 4px 8px; border: 1px solid #e5e7eb; }
+  .bubble .spec-table tr:first-child td { background: #f3f4f6; font-weight: 600; }
+
+  .suggestions {
+    display: flex; flex-wrap: wrap; gap: 7px; padding: 8px 0 12px;
+  }
+  .sug-btn {
+    background: white; border: 1px solid var(--border); color: var(--primary);
+    padding: 6px 13px; border-radius: 20px; font-size: 0.80rem; cursor: pointer;
+    transition: all .15s; font-family: inherit; font-weight: 500;
+  }
+  .sug-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+  .input-area {
+    background: white; border-top: 1px solid var(--border);
+    padding: 12px 16px 14px; display: flex; gap: 10px;
+    position: sticky; bottom: 0; width: 100%; max-width: 780px; align-self: center;
+  }
+  #user-input {
+    flex: 1; border: 1.5px solid var(--border); border-radius: 22px;
+    padding: 10px 16px; font-size: 0.88rem; outline: none;
+    font-family: inherit; resize: none; transition: border .2s;
+    min-height: 42px; max-height: 110px; overflow-y: auto;
+  }
+  #user-input:focus { border-color: var(--primary); }
+  #send-btn {
+    background: var(--primary); color: white; border: none;
+    border-radius: 50%; width: 42px; height: 42px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s; flex-shrink: 0;
+  }
+  #send-btn:hover { background: var(--primary-dark); }
+  #send-btn svg { width: 18px; height: 18px; }
+  .typing { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
+  .typing span { width: 7px; height: 7px; background: var(--subtext); border-radius: 50%; animation: bounce .9s infinite; }
+  .typing span:nth-child(2) { animation-delay: .15s; }
+  .typing span:nth-child(3) { animation-delay: .30s; }
+  @keyframes bounce { 0%,80%,100% { transform: scale(0.7); opacity:.5; } 40% { transform: scale(1); opacity:1; } }
+  .lang-flag { font-size: 0.75rem; opacity: 0.65; margin-top: 4px; text-align: right; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1rem; }
+    .bubble { font-size: 0.85rem; }
+    .sug-btn { font-size: 0.75rem; padding: 5px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="12" width="6" height="10" rx="1.5" fill="#0066cc"/>
+      <rect x="10" y="7" width="6" height="15" rx="1.5" fill="#0066cc"/>
+      <rect x="18" y="3" width="6" height="19" rx="1.5" fill="#0066cc"/>
+      <path d="M3 20 Q13 4 23 8" stroke="#ff6600" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div>
+    <h1>InfiniPower Technical FAQ Assistant</h1>
+    <p>RPS-5000 · PowerVUE · ICP Training · Multilingual Support</p>
+  </div>
+</header>
+
+<div class="chat-wrapper">
+  <div id="chat-box"></div>
+  <div class="suggestions" id="suggestions"></div>
+</div>
+
+<div class="input-area">
+  <textarea id="user-input" placeholder="Ask about RPS-5000, PowerVUE, ICP training... (EN / 日本語 / 한국어 / 中文)" rows="1"></textarea>
+  <button id="send-btn" aria-label="Send">
+    <svg viewBox="0 0 24 24" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+  </button>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  KNOWLEDGE BASE — Built from FAQ_Claude PDFs
+// ─────────────────────────────────────────────
+const KB = {
+
+  // ── COMPANY ──────────────────────────────────
+  company: [
+    {
+      id: "company_overview",
+      keys: /infinipower|company|about|who are|manufacturer|taiwan|what is infini/i,
+      en: `<strong>About InfiniPower Technology Inc.</strong><br>
+InfiniPower is a Taiwan-based power electronics company with 15+ years of R&D experience, specializing in regenerative power testing systems.<br><br>
+<strong>Headquarters:</strong> New Taipei City, Taiwan<br>
+<strong>Phone:</strong> +886-2-25175881<br>
+<strong>Email:</strong> brainchiu@infinipowertech.com<br><br>
+<strong>Core product:</strong> RPS-5000 — a full four-quadrant regenerative power testing system for EV, renewable energy, EMC, and industrial applications.`,
+      ja: `<strong>InfiniPower Technology Inc. について</strong><br>
+InfiniPowerは台湾に拠点を置く電力エレクトロニクス企業で、15年以上のR&D経験を持ち、回生電力試験システムの専門メーカーです。<br><br>
+<strong>本社：</strong>台湾・新北市<br>
+<strong>電話：</strong>+886-2-25175881<br>
+<strong>メール：</strong>brainchiu@infinipowertech.com<br><br>
+<strong>主力製品：</strong>RPS-5000（4象限回生電力試験システム）`,
+      ko: `<strong>InfiniPower Technology Inc. 소개</strong><br>
+InfiniPower는 대만에 본사를 둔 전력전자 기업으로, 15년 이상의 R&D 경험을 바탕으로 회생형 전력 테스트 시스템을 전문으로 합니다.<br><br>
+<strong>본사:</strong> 대만 신베이시<br>
+<strong>전화:</strong> +886-2-25175881<br>
+<strong>이메일:</strong> brainchiu@infinipowertech.com<br><br>
+<strong>핵심 제품:</strong> RPS-5000 (4사분면 회생 전력 테스트 시스템)`,
+      zh: `<strong>關於 InfiniPower Technology Inc.</strong><br>
+InfiniPower 是一家總部位於台灣新北市的電力電子公司，擁有超過15年的研發經驗，專注於再生電力測試系統。<br><br>
+<strong>總部：</strong>台灣新北市<br>
+<strong>電話：</strong>+886-2-25175881<br>
+<strong>Email：</strong>brainchiu@infinipowertech.com<br><br>
+<strong>核心產品：</strong>RPS-5000（全四象限再生電力測試系統）`
+    }
+  ],
+
+  // ── PRODUCT OVERVIEW ─────────────────────────
+  product: [
+    {
+      id: "rps5000_overview",
+      keys: /rps.?5000|rps5000|product line|product series|what is rps|regenerative power|four.quadrant|4.quadrant/i,
+      en: `<strong>RPS-5000 Series Overview</strong><br>
+The RPS-5000 is a full four-quadrant regenerative power testing system — it can simultaneously source and absorb both AC and DC power.<br><br>
+<strong>Model variants:</strong>
+<ul>
+  <li><span class="tag">RPS-5000 G</span> Grid Simulator — simulates real-world grid conditions</li>
+  <li><span class="tag">RPS-5000 L</span> Electronic Load — bidirectional AC/DC regenerative load</li>
+  <li><span class="tag">RPS-5000 S</span> AC Source — programmable AC power supply</li>
+  <li><span class="tag">RPS-5000 B</span> Battery Test — battery charge/discharge testing</li>
+</ul>
+<strong>Power ratings:</strong><br>
+RPS-5030 (30 kVA) · RPS-5045 (45 kVA) · RPS-5090 (90 kVA)<br>
+Scalable up to <strong>225 kVA</strong> with 5 units in parallel`,
+      ja: `<strong>RPS-5000シリーズ概要</strong><br>
+RPS-5000は、交流・直流の電力を同時に供給・吸収できる、フル4象限回生電力試験システムです。<br><br>
+<strong>モデル一覧：</strong>
+<ul>
+  <li><span class="tag">RPS-5000 G</span> グリッドシミュレーター</li>
+  <li><span class="tag">RPS-5000 L</span> 電子負荷（双方向AC/DC回生）</li>
+  <li><span class="tag">RPS-5000 S</span> ACソース（プログラマブル電源）</li>
+  <li><span class="tag">RPS-5000 B</span> バッテリー試験</li>
+</ul>
+<strong>出力容量：</strong>RPS-5030 (30kVA) · RPS-5045 (45kVA) · RPS-5090 (90kVA)<br>
+5台並列で最大 <strong>225kVA</strong> まで拡張可能`,
+      ko: `<strong>RPS-5000 시리즈 개요</strong><br>
+RPS-5000은 AC·DC 전력을 동시에 공급하고 흡수할 수 있는 전 4사분면 회생 전력 테스트 시스템입니다.<br><br>
+<strong>모델 종류:</strong>
+<ul>
+  <li><span class="tag">RPS-5000 G</span> 그리드 시뮬레이터</li>
+  <li><span class="tag">RPS-5000 L</span> 전자 부하 (양방향 AC/DC 회생)</li>
+  <li><span class="tag">RPS-5000 S</span> AC 소스 (프로그래머블 전원)</li>
+  <li><span class="tag">RPS-5000 B</span> 배터리 테스트</li>
+</ul>
+<strong>전력 용량:</strong> RPS-5030 (30kVA) · RPS-5045 (45kVA) · RPS-5090 (90kVA)<br>
+5대 병렬로 최대 <strong>225kVA</strong>까지 확장 가능`,
+      zh: `<strong>RPS-5000 系列概覽</strong><br>
+RPS-5000 是全四象限再生電力測試系統，可同時對 AC/DC 電力進行輸出與吸收。<br><br>
+<strong>機型：</strong>
+<ul>
+  <li><span class="tag">RPS-5000 G</span> 電網模擬器</li>
+  <li><span class="tag">RPS-5000 L</span> 電子負載（雙向 AC/DC 回生）</li>
+  <li><span class="tag">RPS-5000 S</span> AC 電源（可程式化）</li>
+  <li><span class="tag">RPS-5000 B</span> 電池測試</li>
+</ul>
+<strong>功率等級：</strong>RPS-5030 (30kVA) · RPS-5045 (45kVA) · RPS-5090 (90kVA)<br>
+5台並聯最高可達 <strong>225kVA</strong>`
+    },
+    {
+      id: "rps_g_model",
+      keys: /model g|grid sim|grid model|rps.*g\b|g model|グリッド|전력망 시뮬|电网模拟/i,
+      en: `<strong>RPS-5000 G — Grid Simulator</strong><br>
+Simulates real-world power grid conditions including voltage sags, swells, frequency shifts, and harmonic distortion.<br><br>
+<strong>Key specs:</strong>
+<ul>
+  <li>Output: 0–350 Vrms AC / DC ±495 V</li>
+  <li>Frequency: DC, 30–150 Hz</li>
+  <li>Current: up to 100 Arms (3-phase) / 300 Arms (1-phase, 5045)</li>
+  <li>Harmonic generation: up to 50th order</li>
+  <li>Phase modes: Independent / Same Frequency / Balanced</li>
+</ul>
+<strong>Applications:</strong> Solar inverter testing, wind inverter testing, grid-tied device compliance testing`,
+      ja: `<strong>RPS-5000 G — グリッドシミュレーター</strong><br>
+電圧サグ・スウェル・周波数変動・高調波歪みなど、実際の電力系統条件を模擬します。<br><br>
+<strong>主要仕様：</strong>
+<ul>
+  <li>出力：0〜350 Vrms AC / DC ±495 V</li>
+  <li>周波数：DC、30〜150 Hz</li>
+  <li>電流：最大100 Arms（3相）/ 300 Arms（1相、5045）</li>
+  <li>高調波生成：最大50次</li>
+  <li>相モード：独立 / 同一周波数 / バランス</li>
+</ul>
+<strong>用途：</strong>太陽光・風力インバーター試験、系統連系機器試験`,
+      ko: `<strong>RPS-5000 G — 그리드 시뮬레이터</strong><br>
+전압 새그·스웰, 주파수 변동, 고조파 왜곡 등 실제 전력망 조건을 모사합니다.<br><br>
+<strong>주요 사양:</strong>
+<ul>
+  <li>출력: 0~350 Vrms AC / DC ±495 V</li>
+  <li>주파수: DC, 30~150 Hz</li>
+  <li>전류: 최대 100 Arms (3상) / 300 Arms (1상, 5045)</li>
+  <li>고조파 생성: 50차까지</li>
+</ul>
+<strong>응용:</strong> 태양광·풍력 인버터 테스트, 계통연계 기기 인증`,
+      zh: `<strong>RPS-5000 G — 電網模擬器</strong><br>
+模擬真實電網條件，包括電壓跌落/升高、頻率偏移和諧波失真。<br><br>
+<strong>主要規格：</strong>
+<ul>
+  <li>輸出：0–350 Vrms AC / DC ±495 V</li>
+  <li>頻率：DC、30–150 Hz</li>
+  <li>電流：最高 100 Arms（三相）/ 300 Arms（單相，5045）</li>
+  <li>諧波生成：最高50次</li>
+  <li>相位模式：獨立 / 同頻率 / 平衡</li>
+</ul>
+<strong>應用：</strong>太陽能/風力逆變器測試、併網設備合規測試`
+    },
+    {
+      id: "rps_l_model",
+      keys: /model l\b|electronic load|rps.*\bl\b|l model|電子負荷|전자 부하|电子负载/i,
+      en: `<strong>RPS-5000 L — Bidirectional Electronic Load</strong><br>
+A regenerative AC/DC electronic load that feeds absorbed energy back to the grid at 90%+ efficiency — dramatically reducing energy costs during testing.<br><br>
+<strong>Key specs:</strong>
+<ul>
+  <li>Power range: 30–225 kVA (scalable)</li>
+  <li>AC current: up to 300 A (1-phase) / 100 A (3-phase)</li>
+  <li>DC current: up to 300 A DC</li>
+  <li>Regenerative efficiency: ≥90%</li>
+  <li>20+ operating modes</li>
+</ul>
+<strong>AC Load modes:</strong> CC (Constant Current), CP (Constant Power), CS (Constant Conductance), CR (Constant Resistance)<br>
+<strong>DC Load modes:</strong> CC, CP, CR, Battery Test, SWP (Sweep)<br>
+<strong>Programmable modes:</strong> LIST, STEP, PULSE, TRANSIENT`,
+      ja: `<strong>RPS-5000 L — 双方向電子負荷</strong><br>
+吸収した電力を90%以上の効率で系統に返す回生型AC/DC電子負荷。試験コストを大幅削減します。<br><br>
+<strong>主要仕様：</strong>
+<ul>
+  <li>容量：30〜225kVA（並列拡張可能）</li>
+  <li>回生効率：≥90%</li>
+  <li>動作モード：20種類以上</li>
+</ul>
+<strong>ACモード：</strong>CC / CP / CS / CR<br>
+<strong>DCモード：</strong>CC / CP / CR / バッテリー試験 / SWP<br>
+<strong>プログラムモード：</strong>LIST / STEP / PULSE / TRANSIENT`,
+      ko: `<strong>RPS-5000 L — 양방향 전자 부하</strong><br>
+흡수한 전력을 90% 이상 효율로 계통에 되돌려 보내는 회생형 AC/DC 전자 부하입니다.<br><br>
+<strong>주요 사양:</strong>
+<ul>
+  <li>전력 범위: 30~225 kVA</li>
+  <li>회생 효율: ≥90%</li>
+  <li>동작 모드: 20가지 이상</li>
+</ul>
+<strong>AC 모드:</strong> CC / CP / CS / CR<br>
+<strong>DC 모드:</strong> CC / CP / CR / Battery Test / SWP`,
+      zh: `<strong>RPS-5000 L — 雙向電子負載</strong><br>
+再生型 AC/DC 電子負載，以 90% 以上效率將吸收的電能回饋電網，大幅降低測試能耗。<br><br>
+<strong>主要規格：</strong>
+<ul>
+  <li>功率範圍：30–225 kVA（可擴展）</li>
+  <li>回生效率：≥90%</li>
+  <li>運行模式：20種以上</li>
+</ul>
+<strong>AC 模式：</strong>CC / CP / CS / CR<br>
+<strong>DC 模式：</strong>CC / CP / CR / 電池測試 / SWP<br>
+<strong>程式化模式：</strong>LIST / STEP / PULSE / TRANSIENT`
+    },
+    {
+      id: "rps_s_model",
+      keys: /model s\b|ac source|rps.*\bs\b|s model|acソース|ac 소스|ac电源/i,
+      en: `<strong>RPS-5000 S — Programmable AC Source</strong><br>
+A high-performance programmable AC power supply with wide frequency range and multiple output coupling modes.<br><br>
+<strong>Output specs:</strong>
+<ul>
+  <li>AC voltage: 0–350 Vrms (L-N) / 0–800 Vrms (L-L)</li>
+  <li>DC voltage: ±495 V</li>
+  <li>Frequency: DC, 30–150 Hz</li>
+  <li>35% higher AC current density vs. competitors</li>
+  <li>Full rated DC power output</li>
+</ul>
+<strong>Coupling modes:</strong> AC only / DC only / AC+DC combined<br>
+<strong>Waveforms:</strong> SINE, SQUA (Square), TRIA (Triangle), CSIN (Clipped Sine), DST (Distorted), USER (custom)<br>
+<strong>Applications:</strong> EMC testing, aerospace/avionics, telecom servers, motor drive testing`,
+      ja: `<strong>RPS-5000 S — プログラマブルACソース</strong><br>
+広い周波数範囲と複数の結合モードを持つ高性能プログラマブル交流電源。<br><br>
+<strong>出力仕様：</strong>
+<ul>
+  <li>AC電圧：0〜350 Vrms（L-N）/ 0〜800 Vrms（L-L）</li>
+  <li>DC電圧：±495 V</li>
+  <li>周波数：DC、30〜150 Hz</li>
+  <li>競合比35%高電流密度</li>
+</ul>
+<strong>結合モード：</strong>AC / DC / AC+DC<br>
+<strong>波形：</strong>SINE / SQUA / TRIA / CSIN / DST / USER<br>
+<strong>用途：</strong>EMC試験、航空宇宙、通信サーバー、モータードライブ試験`,
+      ko: `<strong>RPS-5000 S — 프로그래머블 AC 소스</strong><br>
+광대역 주파수와 다양한 커플링 모드를 갖춘 고성능 프로그래머블 AC 전원입니다.<br><br>
+<strong>출력 사양:</strong>
+<ul>
+  <li>AC 전압: 0~350 Vrms (L-N) / 0~800 Vrms (L-L)</li>
+  <li>DC 전압: ±495 V</li>
+  <li>주파수: DC, 30~150 Hz</li>
+</ul>
+<strong>커플링 모드:</strong> AC / DC / AC+DC<br>
+<strong>파형:</strong> SINE / SQUA / TRIA / CSIN / DST / USER`,
+      zh: `<strong>RPS-5000 S — 可程式化 AC 電源</strong><br>
+高性能可程式化交流電源，寬頻範圍，支援多種耦合模式。<br><br>
+<strong>輸出規格：</strong>
+<ul>
+  <li>AC 電壓：0–350 Vrms（L-N）/ 0–800 Vrms（L-L）</li>
+  <li>DC 電壓：±495 V</li>
+  <li>頻率：DC、30–150 Hz</li>
+  <li>AC 電流密度比競品高 35%</li>
+</ul>
+<strong>耦合模式：</strong>AC / DC / AC+DC<br>
+<strong>波形：</strong>SINE / SQUA / TRIA / CSIN / DST / USER<br>
+<strong>應用：</strong>EMC 測試、航空航天、電信伺服器、電機驅動測試`
+    }
+  ],
+
+  // ── SPECIFICATIONS ────────────────────────────
+  specs: [
+    {
+      id: "full_specs",
+      keys: /spec|specification|voltage|current|power|frequenc|efficiency|output|ripple|watt|kva|rated|仕様|규격|规格|電圧|전압|电压/i,
+      en: `<strong>RPS-5000 Key Specifications</strong><br>
+<table class="spec-table">
+  <tr><td>AC Output Voltage</td><td>0–350 Vrms (L-N) / 0–800 Vrms (L-L)</td></tr>
+  <tr><td>DC Output Voltage</td><td>±495 V</td></tr>
+  <tr><td>AC Current (3-phase)</td><td>Up to 100 Arms</td></tr>
+  <tr><td>AC Current (1-phase)</td><td>Up to 300 Arms (5045 model)</td></tr>
+  <tr><td>Frequency Range</td><td>DC, 30–150 Hz</td></tr>
+  <tr><td>Power Ratings</td><td>30 / 45 / 90 kVA (225 kVA parallel)</td></tr>
+  <tr><td>Regenerative Efficiency</td><td>≥ 90% (91% typical)</td></tr>
+  <tr><td>Output Ripple (AC)</td><td>&lt; 0.6 Vrms</td></tr>
+  <tr><td>Technology</td><td>SiC MOSFET</td></tr>
+  <tr><td>Slew Rate</td><td>0.01–2000 V/ms (Vac/Vdc)</td></tr>
+  <tr><td>Impedance (R)</td><td>−1.0 to +1.0 Ω (programmable)</td></tr>
+  <tr><td>Impedance (L)</td><td>−1000 to +1000 μH (programmable)</td></tr>
+</table>`,
+      ja: `<strong>RPS-5000 主要仕様</strong><br>
+<table class="spec-table">
+  <tr><td>AC出力電圧</td><td>0〜350 Vrms（L-N）/ 0〜800 Vrms（L-L）</td></tr>
+  <tr><td>DC出力電圧</td><td>±495 V</td></tr>
+  <tr><td>AC電流（3相）</td><td>最大100 Arms</td></tr>
+  <tr><td>AC電流（1相）</td><td>最大300 Arms（5045）</td></tr>
+  <tr><td>周波数範囲</td><td>DC、30〜150 Hz</td></tr>
+  <tr><td>定格容量</td><td>30 / 45 / 90 kVA（並列225 kVA）</td></tr>
+  <tr><td>回生効率</td><td>≥ 90%（典型91%）</td></tr>
+  <tr><td>出力リプル</td><td>&lt; 0.6 Vrms</td></tr>
+  <tr><td>技術</td><td>SiC MOSFET</td></tr>
+</table>`,
+      ko: `<strong>RPS-5000 주요 사양</strong><br>
+<table class="spec-table">
+  <tr><td>AC 출력 전압</td><td>0~350 Vrms (L-N) / 0~800 Vrms (L-L)</td></tr>
+  <tr><td>DC 출력 전압</td><td>±495 V</td></tr>
+  <tr><td>AC 전류 (3상)</td><td>최대 100 Arms</td></tr>
+  <tr><td>주파수 범위</td><td>DC, 30~150 Hz</td></tr>
+  <tr><td>전력 등급</td><td>30 / 45 / 90 kVA (225 kVA 병렬)</td></tr>
+  <tr><td>회생 효율</td><td>≥ 90% (통상 91%)</td></tr>
+  <tr><td>출력 리플</td><td>&lt; 0.6 Vrms</td></tr>
+  <tr><td>기술</td><td>SiC MOSFET</td></tr>
+</table>`,
+      zh: `<strong>RPS-5000 主要規格</strong><br>
+<table class="spec-table">
+  <tr><td>AC 輸出電壓</td><td>0–350 Vrms（L-N）/ 0–800 Vrms（L-L）</td></tr>
+  <tr><td>DC 輸出電壓</td><td>±495 V</td></tr>
+  <tr><td>AC 電流（三相）</td><td>最高 100 Arms</td></tr>
+  <tr><td>AC 電流（單相）</td><td>最高 300 Arms（5045型）</td></tr>
+  <tr><td>頻率範圍</td><td>DC、30–150 Hz</td></tr>
+  <tr><td>功率等級</td><td>30 / 45 / 90 kVA（並聯225 kVA）</td></tr>
+  <tr><td>回生效率</td><td>≥ 90%（典型值 91%）</td></tr>
+  <tr><td>輸出紋波</td><td>&lt; 0.6 Vrms</td></tr>
+  <tr><td>技術</td><td>SiC MOSFET</td></tr>
+</table>`
+    }
+  ],
+
+  // ── APPLICATIONS ─────────────────────────────
+  applications: [
+    {
+      id: "app_overview",
+      keys: /application|use case|industry|ev|electric vehicle|solar|wind|renewable|emc|aerospace|server|telecom|motor|battery test|用途|アプリ|응용|应用/i,
+      en: `<strong>RPS-5000 Application Areas</strong><br><br>
+<strong>🔋 EV & Battery Testing (G+L)</strong><br>
+EV charger testing, battery charge/discharge cycling, BMS validation<br><br>
+<strong>☀️ Renewable Energy (G+L)</strong><br>
+Solar/PV inverter testing, wind power inverter compliance, grid-tied device certification<br><br>
+<strong>⚡ Power Electronics (S+L)</strong><br>
+Motor drive testing, UPS/inverter testing, frequency converter evaluation<br><br>
+<strong>📡 Communication & Infrastructure (S)</strong><br>
+Telecom base station power, data center/server power supply testing<br><br>
+<strong>✈️ Aerospace & Defense (S+L)</strong><br>
+Avionics power testing (400 Hz), military-grade power compliance<br><br>
+<strong>🔬 Labs & Production (S+L)</strong><br>
+R&D power testing, production line burn-in, EMC pre-compliance testing`,
+      ja: `<strong>RPS-5000 アプリケーション分野</strong><br><br>
+<strong>🔋 EV・バッテリー試験 (G+L)</strong><br>
+EVチャージャー試験、バッテリー充放電、BMS検証<br><br>
+<strong>☀️ 再生可能エネルギー (G+L)</strong><br>
+太陽光インバーター試験、風力インバーター認証、系統連系試験<br><br>
+<strong>⚡ 電力エレクトロニクス (S+L)</strong><br>
+モータードライブ、UPS、周波数変換機試験<br><br>
+<strong>📡 通信・インフラ (S)</strong><br>
+通信基地局電源、データセンター電源試験<br><br>
+<strong>✈️ 航空宇宙・防衛 (S+L)</strong><br>
+航空電子機器（400 Hz）試験、軍用電源適合試験`,
+      ko: `<strong>RPS-5000 응용 분야</strong><br><br>
+<strong>🔋 EV & 배터리 테스트 (G+L)</strong><br>
+EV 충전기 테스트, 배터리 충방전, BMS 검증<br><br>
+<strong>☀️ 신재생에너지 (G+L)</strong><br>
+태양광/풍력 인버터 테스트, 계통연계 기기 인증<br><br>
+<strong>⚡ 전력전자 (S+L)</strong><br>
+모터 드라이브, UPS, 주파수 변환기 테스트<br><br>
+<strong>📡 통신·인프라 (S)</strong><br>
+통신 기지국 전원, 데이터센터 전원 공급 테스트<br><br>
+<strong>✈️ 항공우주·방산 (S+L)</strong><br>
+항공전자 전원(400 Hz), 군용 전원 적합성 테스트`,
+      zh: `<strong>RPS-5000 應用領域</strong><br><br>
+<strong>🔋 EV & 電池測試 (G+L)</strong><br>
+電動車充電樁測試、電池充放電循環、BMS 驗證<br><br>
+<strong>☀️ 再生能源 (G+L)</strong><br>
+太陽能/風力逆變器測試、併網設備認證<br><br>
+<strong>⚡ 電力電子 (S+L)</strong><br>
+馬達驅動、UPS/逆變器、變頻器測試<br><br>
+<strong>📡 通訊與基礎設施 (S)</strong><br>
+電信基站電源、資料中心伺服器電源測試<br><br>
+<strong>✈️ 航空航天 (S+L)</strong><br>
+航空電子設備電源測試（400 Hz）、軍規電源合規測試`
+    }
+  ],
+
+  // ── OPERATING MODES ──────────────────────────
+  modes: [
+    {
+      id: "operating_modes",
+      keys: /mode|cc|cp|cs|cr|constant current|constant power|list mode|step mode|transient|pulse|sweep|swp|fixed mode|動作モード|운전 모드|运行模式/i,
+      en: `<strong>RPS-5000 Operating Modes</strong><br><br>
+<strong>AC Load Modes (RPS-5000 L):</strong>
+<ul>
+  <li><span class="tag">CC</span> Constant Current — maintains steady current draw</li>
+  <li><span class="tag">CP</span> Constant Power — maintains steady power consumption</li>
+  <li><span class="tag">CS</span> Constant Conductance — current proportional to voltage</li>
+  <li><span class="tag">CR</span> Constant Resistance — simulates resistive load</li>
+</ul>
+<strong>DC Load Modes:</strong>
+<ul>
+  <li><span class="tag">Battery Test</span> Charge/discharge testing with configurable profiles</li>
+  <li><span class="tag">SWP</span> Sweep mode — voltage/current sweep testing</li>
+</ul>
+<strong>Programmable Output Modes (RPS-5000 G/S):</strong>
+<ul>
+  <li><span class="tag">FIXED</span> Stable output — steady-state operation</li>
+  <li><span class="tag">LIST</span> Programmable sequence — simulate surges, dips, frequency shifts</li>
+  <li><span class="tag">STEP</span> Incremental step output changes</li>
+  <li><span class="tag">PULSE</span> Pulse output waveform generation</li>
+  <li><span class="tag">TRANSIENT</span> Fast transient output for immunity testing</li>
+</ul>`,
+      ja: `<strong>RPS-5000 動作モード</strong><br><br>
+<strong>AC負荷モード（L型）：</strong>
+<ul>
+  <li><span class="tag">CC</span> 定電流</li>
+  <li><span class="tag">CP</span> 定電力</li>
+  <li><span class="tag">CS</span> 定コンダクタンス</li>
+  <li><span class="tag">CR</span> 定抵抗</li>
+</ul>
+<strong>DCモード：</strong>CC / CP / CR / バッテリー試験 / SWP<br><br>
+<strong>プログラムモード（G/S型）：</strong>
+<ul>
+  <li><span class="tag">FIXED</span> 安定出力</li>
+  <li><span class="tag">LIST</span> シーケンス出力（サグ・スウェル・周波数変動）</li>
+  <li><span class="tag">STEP</span> ステップ変化</li>
+  <li><span class="tag">PULSE</span> パルス出力</li>
+  <li><span class="tag">TRANSIENT</span> 過渡出力</li>
+</ul>`,
+      ko: `<strong>RPS-5000 동작 모드</strong><br><br>
+<strong>AC 부하 모드 (L 모델):</strong>
+<ul>
+  <li><span class="tag">CC</span> 정전류</li>
+  <li><span class="tag">CP</span> 정전력</li>
+  <li><span class="tag">CS</span> 정컨덕턴스</li>
+  <li><span class="tag">CR</span> 정저항</li>
+</ul>
+<strong>프로그래머블 모드 (G/S):</strong>
+<ul>
+  <li><span class="tag">FIXED</span> 안정 출력</li>
+  <li><span class="tag">LIST</span> 시퀀스 출력 (새그·스웰·주파수 변동 시뮬레이션)</li>
+  <li><span class="tag">STEP / PULSE / TRANSIENT</span> 스텝/펄스/과도 출력</li>
+</ul>`,
+      zh: `<strong>RPS-5000 運行模式</strong><br><br>
+<strong>AC 負載模式（L 型）：</strong>
+<ul>
+  <li><span class="tag">CC</span> 恒流模式</li>
+  <li><span class="tag">CP</span> 恒功率模式</li>
+  <li><span class="tag">CS</span> 恒電導模式</li>
+  <li><span class="tag">CR</span> 恒阻模式</li>
+</ul>
+<strong>DC 模式：</strong>CC / CP / CR / 電池測試 / SWP<br><br>
+<strong>程式化輸出模式（G/S 型）：</strong>
+<ul>
+  <li><span class="tag">FIXED</span> 穩定輸出</li>
+  <li><span class="tag">LIST</span> 程式化序列（模擬電壓跌落/升高/頻率偏移）</li>
+  <li><span class="tag">STEP / PULSE / TRANSIENT</span> 步進/脈衝/暫態輸出</li>
+</ul>`
+    }
+  ],
+
+  // ── WAVEFORM & HARMONICS ─────────────────────
+  waveform: [
+    {
+      id: "waveform_harmonic",
+      keys: /waveform|harmonic|thd|sine|square|triangle|clipped|distort|user wave|50th|高調波|高调波|고조파|波形/i,
+      en: `<strong>Waveform & Harmonic Functions</strong><br><br>
+<strong>Built-in waveform types:</strong>
+<ul>
+  <li><span class="tag">SINE</span> Standard sine wave</li>
+  <li><span class="tag">SQUA</span> Square wave</li>
+  <li><span class="tag">TRIA</span> Triangle wave</li>
+  <li><span class="tag">CSIN</span> Clipped sine wave</li>
+  <li><span class="tag">DST</span> Pre-defined distorted wave</li>
+  <li><span class="tag">USER</span> Custom user-defined waveform</li>
+</ul>
+<strong>Harmonic synthesis:</strong>
+<ul>
+  <li>Generate or cancel harmonics up to the <strong>50th order</strong></li>
+  <li>Set amplitude (% of fundamental) and phase angle per harmonic</li>
+  <li>Measure THD% (Total Harmonic Distortion)</li>
+  <li>Per-harmonic analysis table in PowerVUE software</li>
+</ul>
+<strong>Phase modes:</strong> Independent / Same Frequency / Balanced (3-phase)`,
+      ja: `<strong>波形・高調波機能</strong><br><br>
+<strong>内蔵波形：</strong>
+<ul>
+  <li><span class="tag">SINE</span> 正弦波</li>
+  <li><span class="tag">SQUA</span> 方形波</li>
+  <li><span class="tag">TRIA</span> 三角波</li>
+  <li><span class="tag">CSIN</span> クリップ正弦波</li>
+  <li><span class="tag">DST</span> 歪み波</li>
+  <li><span class="tag">USER</span> ユーザー定義波形</li>
+</ul>
+<strong>高調波合成：</strong>最大<strong>第50次</strong>まで設定可能。振幅と位相を各次数で独立設定。<br>
+THD%測定、次数別分析テーブルをPowerVUEで確認可能。`,
+      ko: `<strong>파형 및 고조파 기능</strong><br><br>
+<strong>내장 파형:</strong>
+<ul>
+  <li><span class="tag">SINE</span> 정현파</li>
+  <li><span class="tag">SQUA</span> 구형파</li>
+  <li><span class="tag">TRIA</span> 삼각파</li>
+  <li><span class="tag">CSIN</span> 클리핑 정현파</li>
+  <li><span class="tag">DST</span> 왜형파</li>
+  <li><span class="tag">USER</span> 사용자 정의 파형</li>
+</ul>
+<strong>고조파 합성:</strong> 최대 <strong>50차</strong>까지 설정 가능. 각 차수별 진폭·위상 독립 설정.<br>
+PowerVUE에서 THD% 측정 및 차수별 분석 가능.`,
+      zh: `<strong>波形與諧波功能</strong><br><br>
+<strong>內建波形：</strong>
+<ul>
+  <li><span class="tag">SINE</span> 正弦波</li>
+  <li><span class="tag">SQUA</span> 方波</li>
+  <li><span class="tag">TRIA</span> 三角波</li>
+  <li><span class="tag">CSIN</span> 削波正弦波</li>
+  <li><span class="tag">DST</span> 失真波形</li>
+  <li><span class="tag">USER</span> 使用者自訂波形</li>
+</ul>
+<strong>諧波合成：</strong>最高可設定至 <strong>第50次</strong> 諧波，每次諧波可獨立設定幅值和相位。<br>
+在 PowerVUE 中可量測 THD% 並查看逐次諧波分析表。`
+    }
+  ],
+
+  // ── POWERVUE SOFTWARE ─────────────────────────
+  powervue: [
+    {
+      id: "powervue_overview",
+      keys: /powervue|power vue|pc software|remote control|software|install|windows|ソフト|소프트웨어|软件/i,
+      en: `<strong>PowerVUE Software Overview</strong><br>
+PowerVUE is InfiniPower's PC-based remote control and monitoring software for the RPS-5000 series.<br><br>
+<strong>System Requirements:</strong>
+<ul>
+  <li>OS: Windows 10 or Windows 11</li>
+  <li>CPU: Intel Core i3 or better</li>
+  <li>RAM: 4 GB minimum</li>
+  <li>Storage: 1 GB free disk space</li>
+  <li>Connection: Ethernet / USB 2.0 / RS-232 / GPIB</li>
+</ul>
+<strong>Required dependencies:</strong>
+<ul>
+  <li>.NET Framework 4.5 or later</li>
+  <li>NI VISA v20 or later</li>
+  <li>NI-488.2 Driver v14+ (GPIB connection only)</li>
+</ul>
+<strong>Installation:</strong> Run <code>RGS Installer.msi</code> → then <code>setup.exe</code>`,
+      ja: `<strong>PowerVUEソフトウェア概要</strong><br>
+PowerVUEは、RPS-5000シリーズ専用のPCベースのリモートコントロール・モニタリングソフトウェアです。<br><br>
+<strong>システム要件：</strong>
+<ul>
+  <li>OS：Windows 10 / Windows 11</li>
+  <li>CPU：Intel Core i3以上</li>
+  <li>メモリ：4GB以上</li>
+  <li>ストレージ：1GB以上</li>
+  <li>接続：Ethernet / USB 2.0 / RS-232 / GPIB</li>
+</ul>
+<strong>必要な依存ソフト：</strong>
+<ul>
+  <li>.NET Framework 4.5以上</li>
+  <li>NI VISA v20以上</li>
+  <li>NI-488.2 Driver v14以上（GPIBのみ）</li>
+</ul>
+<strong>インストール：</strong>RGS Installer.msi → setup.exe の順に実行`,
+      ko: `<strong>PowerVUE 소프트웨어 개요</strong><br>
+PowerVUE는 RPS-5000 시리즈용 PC 기반 원격 제어 및 모니터링 소프트웨어입니다.<br><br>
+<strong>시스템 요구사항:</strong>
+<ul>
+  <li>OS: Windows 10 / Windows 11</li>
+  <li>CPU: Intel Core i3 이상</li>
+  <li>RAM: 4GB 이상</li>
+  <li>저장공간: 1GB 이상</li>
+  <li>연결: Ethernet / USB 2.0 / RS-232 / GPIB</li>
+</ul>
+<strong>필수 의존성:</strong>
+<ul>
+  <li>.NET Framework 4.5 이상</li>
+  <li>NI VISA v20 이상</li>
+  <li>NI-488.2 Driver v14 이상 (GPIB 전용)</li>
+</ul>
+<strong>설치:</strong> RGS Installer.msi → setup.exe 순서로 실행`,
+      zh: `<strong>PowerVUE 軟體概覽</strong><br>
+PowerVUE 是 InfiniPower RPS-5000 系列專用的 PC 端遠端控制與監測軟體。<br><br>
+<strong>系統需求：</strong>
+<ul>
+  <li>作業系統：Windows 10 / Windows 11</li>
+  <li>CPU：Intel Core i3 以上</li>
+  <li>記憶體：4 GB 以上</li>
+  <li>儲存空間：1 GB 以上</li>
+  <li>連線方式：Ethernet / USB 2.0 / RS-232 / GPIB</li>
+</ul>
+<strong>必要相依套件：</strong>
+<ul>
+  <li>.NET Framework 4.5 以上</li>
+  <li>NI VISA v20 以上</li>
+  <li>NI-488.2 Driver v14 以上（僅 GPIB 需要）</li>
+</ul>
+<strong>安裝步驟：</strong>執行 RGS Installer.msi → 再執行 setup.exe`
+    },
+    {
+      id: "powervue_usage",
+      keys: /measurement|connect|launch|simple screen|detail screen|harmonic screen|wave screen|vrms|irms|connect to|how to use powervue|接続|接続方法|연결 방법|如何使用/i,
+      en: `<strong>Using PowerVUE — Connection & Measurement</strong><br><br>
+<strong>Launching:</strong>
+<ol style="margin:6px 0 6px 18px">
+  <li>Open PowerVUE → select interface (GPIB / Ethernet / Offline)</li>
+  <li>Enter instrument address → click <strong>Connect</strong></li>
+</ol>
+<strong>Measurement Screens:</strong>
+<ul>
+  <li><span class="tag">Simple</span> Vrms, Irms, Power (P) per phase + line voltages (V12/V23/V31), S, PF</li>
+  <li><span class="tag">Detail</span> Adds Freq, Vac, Vdc, Vpk, Iac, Idc, Ipk, Is, Q, CF</li>
+  <li><span class="tag">Harmonic</span> Vthd%, Ithd%, per-harmonic table (up to 50th order)</li>
+  <li><span class="tag">Wave</span> Oscilloscope view of voltage/current waveforms</li>
+</ul>
+<strong>Quick Settings:</strong> Vac (0–350 V), Vdc (±495 V), Freq (30–150 Hz) per phase<br>
+<strong>Source Config:</strong> Phase mode, coupling (AC/DC/AC+DC), relay, slew rate, impedance`,
+      ja: `<strong>PowerVUE使用方法 — 接続・測定</strong><br><br>
+<strong>起動手順：</strong>
+<ol style="margin:6px 0 6px 18px">
+  <li>PowerVUEを起動 → インターフェース選択（GPIB / Ethernet / Offline）</li>
+  <li>機器アドレスを入力 → <strong>Connect</strong>をクリック</li>
+</ol>
+<strong>測定画面：</strong>
+<ul>
+  <li><span class="tag">Simple</span> 各相のVrms、Irms、P、線間電圧、S、PF</li>
+  <li><span class="tag">Detail</span> +Freq, Vac/dc/pk, Iac/dc/pk, Q, CF</li>
+  <li><span class="tag">Harmonic</span> Vthd%、Ithd%、次数別テーブル</li>
+  <li><span class="tag">Wave</span> オシロスコープ表示</li>
+</ul>`,
+      ko: `<strong>PowerVUE 사용법 — 연결 및 측정</strong><br><br>
+<strong>실행 절차:</strong>
+<ol style="margin:6px 0 6px 18px">
+  <li>PowerVUE 실행 → 인터페이스 선택 (GPIB / Ethernet / Offline)</li>
+  <li>기기 주소 입력 → <strong>Connect</strong> 클릭</li>
+</ol>
+<strong>측정 화면:</strong>
+<ul>
+  <li><span class="tag">Simple</span> 각 상의 Vrms, Irms, P, 선간전압, S, PF</li>
+  <li><span class="tag">Detail</span> + 주파수, Vac/dc/pk, Iac/dc/pk, Q, CF</li>
+  <li><span class="tag">Harmonic</span> Vthd%, Ithd%, 차수별 테이블</li>
+  <li><span class="tag">Wave</span> 오실로스코프 화면</li>
+</ul>`,
+      zh: `<strong>PowerVUE 使用方法 — 連線與量測</strong><br><br>
+<strong>啟動步驟：</strong>
+<ol style="margin:6px 0 6px 18px">
+  <li>開啟 PowerVUE → 選擇介面（GPIB / Ethernet / Offline）</li>
+  <li>輸入儀器位址 → 點擊 <strong>Connect</strong></li>
+</ol>
+<strong>量測畫面：</strong>
+<ul>
+  <li><span class="tag">Simple</span> 每相 Vrms、Irms、P，線電壓（V12/V23/V31），S、PF</li>
+  <li><span class="tag">Detail</span> 新增 Freq, Vac/dc/pk, Iac/dc/pk, Q, CF</li>
+  <li><span class="tag">Harmonic</span> Vthd%、Ithd%、逐次諧波表（最高50次）</li>
+  <li><span class="tag">Wave</span> 波形示波器畫面</li>
+</ul>
+<strong>快速設定：</strong>每相 Vac (0–350 V)、Vdc (±495 V)、Freq (30–150 Hz)`
+    }
+  ],
+
+  // ── ICP TRAINING ─────────────────────────────
+  training: [
+    {
+      id: "icp_overview",
+      keys: /icp|training|certif|course|partner|program|icp101|icp102|icp103|icp201|icp202|icp203|basic training|advanced training|研修|トレーニング|교육|培训/i,
+      en: `<strong>InfiniPower Certification Program (ICP)</strong><br>
+The ICP is a structured 6-course training series designed for partners and technical teams.<br><br>
+<strong>Course structure:</strong>
+<ul>
+  <li><span class="tag">ICP101</span> Partner Basic Training — Market overview, InfiniPower positioning, product lines</li>
+  <li><span class="tag">ICP102</span> Partner Advanced Training — RPS specs, application areas, competitive comparison</li>
+  <li><span class="tag">ICP103</span> Basic Equipment Startup Demo — Front/rear panel, wiring, startup procedure</li>
+  <li><span class="tag">ICP201</span> Basic Technical Training — UI functions, startup procedure, settings</li>
+  <li><span class="tag">ICP202</span> Advanced Technical Training — Harmonics, slew rate, impedance, waveforms, protection</li>
+  <li><span class="tag">ICP203</span> System Maintenance & Servicing — Troubleshooting, PCB assembly, maintenance SOP</li>
+</ul>
+<strong>Program details:</strong>
+<ul>
+  <li>4 certification levels</li>
+  <li>~90 minutes per course</li>
+  <li>Electronic certificates upon completion</li>
+  <li>Annual review required for Gold Partner status</li>
+</ul>
+<strong>Partner benefits:</strong> Priority tech & sales support, early roadmap access, official InfiniPower partner webpage listing`,
+      ja: `<strong>InfiniPower認定プログラム (ICP)</strong><br>
+ICPはパートナー・技術チーム向けの6コース構成のトレーニングシリーズです。<br><br>
+<strong>コース内容：</strong>
+<ul>
+  <li><span class="tag">ICP101</span> パートナー基礎研修</li>
+  <li><span class="tag">ICP102</span> パートナー上級研修</li>
+  <li><span class="tag">ICP103</span> 機器起動デモ</li>
+  <li><span class="tag">ICP201</span> 技術基礎研修</li>
+  <li><span class="tag">ICP202</span> 技術上級研修（高調波・インピーダンス等）</li>
+  <li><span class="tag">ICP203</span> システム保守・サービス</li>
+</ul>
+<strong>詳細：</strong>4認定レベル / 各90分 / 電子修了証 / ゴールドパートナー向け年次審査<br>
+<strong>パートナー特典：</strong>優先テクニカルサポート、早期ロードマップ閲覧、公式パートナーページ掲載`,
+      ko: `<strong>InfiniPower 인증 프로그램 (ICP)</strong><br>
+ICP는 파트너 및 기술팀을 위한 6과정 구성의 체계적 교육 시리즈입니다.<br><br>
+<strong>과정 구성:</strong>
+<ul>
+  <li><span class="tag">ICP101</span> 파트너 기초 교육</li>
+  <li><span class="tag">ICP102</span> 파트너 심화 교육</li>
+  <li><span class="tag">ICP103</span> 기기 기동 데모</li>
+  <li><span class="tag">ICP201</span> 기술 기초 교육</li>
+  <li><span class="tag">ICP202</span> 기술 심화 교육 (고조파·임피던스 등)</li>
+  <li><span class="tag">ICP203</span> 시스템 유지보수·서비스</li>
+</ul>
+<strong>세부사항:</strong> 4단계 인증 / 과정당 90분 / 전자 수료증 / 골드 파트너 연간 심사<br>
+<strong>파트너 혜택:</strong> 기술·영업 우선 지원, 로드맵 조기 열람, 공식 파트너 페이지 등록`,
+      zh: `<strong>InfiniPower 認證計畫 (ICP)</strong><br>
+ICP 是為合作夥伴及技術團隊設計的結構化 6 課程培訓系列。<br><br>
+<strong>課程內容：</strong>
+<ul>
+  <li><span class="tag">ICP101</span> 合作夥伴基礎培訓</li>
+  <li><span class="tag">ICP102</span> 合作夥伴進階培訓</li>
+  <li><span class="tag">ICP103</span> 基礎設備啟動示範</li>
+  <li><span class="tag">ICP201</span> 基礎技術培訓</li>
+  <li><span class="tag">ICP202</span> 進階技術培訓（諧波、斜率、阻抗等）</li>
+  <li><span class="tag">ICP203</span> 系統維護與維修</li>
+</ul>
+<strong>計畫詳情：</strong>4 個認證等級 / 每課約 90 分鐘 / 電子結業證書 / 金牌合作夥伴每年審核<br>
+<strong>合作夥伴福利：</strong>優先技術/銷售支援、提前獲取產品路線圖、官方合作夥伴頁面列名`
+    }
+  ],
+
+  // ── COMPETITIVE COMPARISON ───────────────────
+  competitive: [
+    {
+      id: "vs_chroma",
+      keys: /compet|chroma|ametek|pacific|kikusui|vs\.|versus|compare|advantage|better|competitor|rival|競合|경쟁|竞品|対比|比較/i,
+      en: `<strong>RPS-5000 vs. Competitors</strong><br><br>
+<strong>vs. Chroma 61845:</strong>
+<table class="spec-table">
+  <tr><td><strong>Feature</strong></td><td><strong>InfiniPower RPS-5000</strong></td><td><strong>Chroma 61845</strong></td></tr>
+  <tr><td>Efficiency</td><td>91% ✅</td><td>81%</td></tr>
+  <tr><td>AC Ripple</td><td>&lt;0.6 Vrms ✅</td><td>&lt;1 Vrms</td></tr>
+  <tr><td>Volume</td><td>53% smaller ✅</td><td>Reference</td></tr>
+  <tr><td>Weight</td><td>34% lighter ✅</td><td>Reference</td></tr>
+  <tr><td>Technology</td><td>SiC MOSFET ✅</td><td>IGBT</td></tr>
+</table><br>
+<strong>vs. Ametek SQ0045:</strong>
+<table class="spec-table">
+  <tr><td><strong>Feature</strong></td><td><strong>InfiniPower RPS-5000</strong></td><td><strong>Ametek SQ0045</strong></td></tr>
+  <tr><td>AC Ripple</td><td>&lt;0.6 Vrms ✅</td><td>&lt;2–3 Vrms</td></tr>
+  <tr><td>Current density</td><td>35% higher ✅</td><td>Reference</td></tr>
+</table><br>
+<strong>Key advantages summary:</strong> Lower ripple, higher efficiency, SiC technology, 53% volume reduction, regenerative (energy-saving) design`,
+      ja: `<strong>RPS-5000 競合比較</strong><br><br>
+<strong>vs. Chroma 61845：</strong>
+<table class="spec-table">
+  <tr><td><strong>項目</strong></td><td><strong>RPS-5000</strong></td><td><strong>Chroma 61845</strong></td></tr>
+  <tr><td>効率</td><td>91% ✅</td><td>81%</td></tr>
+  <tr><td>リプル</td><td>&lt;0.6Vrms ✅</td><td>&lt;1Vrms</td></tr>
+  <tr><td>体積</td><td>53%削減 ✅</td><td>基準</td></tr>
+  <tr><td>重量</td><td>34%軽量 ✅</td><td>基準</td></tr>
+</table><br>
+<strong>vs. Ametek SQ0045：</strong>リプル&lt;0.6Vrms（Ametek比5倍改善）、電流密度35%向上`,
+      ko: `<strong>RPS-5000 경쟁사 비교</strong><br><br>
+<strong>vs. Chroma 61845:</strong>
+<table class="spec-table">
+  <tr><td><strong>항목</strong></td><td><strong>RPS-5000</strong></td><td><strong>Chroma 61845</strong></td></tr>
+  <tr><td>효율</td><td>91% ✅</td><td>81%</td></tr>
+  <tr><td>리플</td><td>&lt;0.6Vrms ✅</td><td>&lt;1Vrms</td></tr>
+  <tr><td>부피</td><td>53% 소형화 ✅</td><td>기준</td></tr>
+  <tr><td>무게</td><td>34% 경량 ✅</td><td>기준</td></tr>
+</table><br>
+<strong>vs. Ametek SQ0045:</strong> 리플 &lt;0.6 Vrms (Ametek 대비 5배 개선), 전류 밀도 35% 향상`,
+      zh: `<strong>RPS-5000 競品比較</strong><br><br>
+<strong>vs. Chroma 61845：</strong>
+<table class="spec-table">
+  <tr><td><strong>項目</strong></td><td><strong>InfiniPower RPS-5000</strong></td><td><strong>Chroma 61845</strong></td></tr>
+  <tr><td>效率</td><td>91% ✅</td><td>81%</td></tr>
+  <tr><td>AC 紋波</td><td>&lt;0.6 Vrms ✅</td><td>&lt;1 Vrms</td></tr>
+  <tr><td>體積</td><td>縮小 53% ✅</td><td>基準</td></tr>
+  <tr><td>重量</td><td>減輕 34% ✅</td><td>基準</td></tr>
+  <tr><td>技術</td><td>SiC MOSFET ✅</td><td>IGBT</td></tr>
+</table><br>
+<strong>vs. Ametek SQ0045：</strong>紋波 &lt;0.6 Vrms（比 Ametek 改善5倍），電流密度高 35%`
+    }
+  ],
+
+  // ── TROUBLESHOOTING ──────────────────────────
+  troubleshoot: [
+    {
+      id: "error_codes",
+      keys: /error|fault|alarm|fan.fail|ovp|otp|vsense|protection|troubleshoot|trip|warning|alert|エラー|알람|오류|故障|报警/i,
+      en: `<strong>Troubleshooting — Error Codes & Solutions</strong><br>
+<table class="spec-table">
+  <tr><td><strong>Error Code</strong></td><td><strong>Description</strong></td><td><strong>Solution</strong></td></tr>
+  <tr><td>FAN_FAIL</td><td>Cooling fan failure</td><td>Check fan wiring; replace fan if necessary</td></tr>
+  <tr><td>VSENSE_ON_OVP</td><td>Remote sense overvoltage</td><td>Check/correct remote sense wiring connections</td></tr>
+  <tr><td>OVP_PEAK</td><td>Output overvoltage (peak)</td><td>Reduce output voltage setting; check load</td></tr>
+  <tr><td>OTP</td><td>Over temperature protection</td><td>Reduce load; check ambient temperature &amp; cooling airflow</td></tr>
+</table><br>
+<strong>PCB assembly locations:</strong><br>
+CAP / DSP / PFC / FIL / ANG / AMP / OPT / SNB / HOS / PWR boards<br><br>
+<strong>For maintenance:</strong> Refer to ICP203 System Maintenance &amp; Servicing course, or contact brainchiu@infinipowertech.com`,
+      ja: `<strong>トラブルシューティング — エラーコードと対処法</strong><br>
+<table class="spec-table">
+  <tr><td><strong>エラーコード</strong></td><td><strong>説明</strong></td><td><strong>対処法</strong></td></tr>
+  <tr><td>FAN_FAIL</td><td>冷却ファン故障</td><td>配線確認・ファン交換</td></tr>
+  <tr><td>VSENSE_ON_OVP</td><td>リモートセンス過電圧</td><td>センス配線を確認・修正</td></tr>
+  <tr><td>OVP_PEAK</td><td>出力過電圧（ピーク）</td><td>出力電圧設定を下げる</td></tr>
+  <tr><td>OTP</td><td>過熱保護</td><td>負荷を減らし、冷却を確認</td></tr>
+</table>`,
+      ko: `<strong>트러블슈팅 — 오류 코드 및 해결 방법</strong><br>
+<table class="spec-table">
+  <tr><td><strong>오류 코드</strong></td><td><strong>설명</strong></td><td><strong>해결 방법</strong></td></tr>
+  <tr><td>FAN_FAIL</td><td>냉각 팬 고장</td><td>팬 배선 확인·교체</td></tr>
+  <tr><td>VSENSE_ON_OVP</td><td>리모트 센스 과전압</td><td>센스 배선 확인·수정</td></tr>
+  <tr><td>OVP_PEAK</td><td>출력 과전압 (피크)</td><td>출력 전압 설정 낮추기</td></tr>
+  <tr><td>OTP</td><td>과열 보호</td><td>부하 줄이기, 냉각 확인</td></tr>
+</table>`,
+      zh: `<strong>故障排除 — 錯誤碼與解決方法</strong><br>
+<table class="spec-table">
+  <tr><td><strong>錯誤碼</strong></td><td><strong>說明</strong></td><td><strong>解決方法</strong></td></tr>
+  <tr><td>FAN_FAIL</td><td>冷卻風扇故障</td><td>檢查風扇接線；必要時更換風扇</td></tr>
+  <tr><td>VSENSE_ON_OVP</td><td>遠端感測過電壓</td><td>檢查並修正遠端感測接線</td></tr>
+  <tr><td>OVP_PEAK</td><td>輸出過電壓（峰值）</td><td>降低輸出電壓設定</td></tr>
+  <tr><td>OTP</td><td>過溫保護</td><td>減少負載，確認環境溫度與散熱</td></tr>
+</table><br>
+<strong>如需維修服務：</strong>請參閱 ICP203 課程或聯繫 brainchiu@infinipowertech.com`
+    }
+  ],
+
+  // ── INSTALLATION & HARDWARE ──────────────────
+  installation: [
+    {
+      id: "hardware_install",
+      keys: /install|panel|front panel|rear panel|wiring|cable|terminal|connect.*equipment|setup|pre.install|circuit breaker|input terminal|output terminal|remote sense|パネル|설치|安装|接线/i,
+      en: `<strong>RPS-5000 Hardware & Installation</strong><br><br>
+<strong>Front Panel:</strong>
+<ul>
+  <li>Lifting Ring · Main Power Switch · USB HOST port</li>
+  <li>7" LCD Touchscreen (main control interface)</li>
+  <li>Output ON/OFF button · Rotary Knob</li>
+  <li>Fixed Foot Pads · Caster Wheels</li>
+</ul>
+<strong>Rear Panel (Communications):</strong>
+<ul>
+  <li>External I/O (TTL), Parallel (master/slave), RS-232, USB Device, LAN, GPIB/CAN</li>
+</ul>
+<strong>Rear Panel (Power):</strong>
+<ul>
+  <li>Circuit Breaker · Cooling Fans</li>
+  <li>Input Terminal Block (38 mm²)</li>
+  <li>Output Terminal Block · Remote Sense Block</li>
+</ul>
+<strong>Cable specs:</strong>
+<ul>
+  <li>3-phase output: 38 mm² cable</li>
+  <li>1-phase output (5045 model): 150 mm² cable</li>
+</ul>
+<strong>Pre-installation checklist:</strong> 6-item checklist (power source, grounding, ventilation, clearance, load wiring, network)<br>
+<strong>Pre-test checklist:</strong> 5-item checklist before first power-on`,
+      ja: `<strong>RPS-5000 ハードウェア・設置</strong><br><br>
+<strong>フロントパネル：</strong>
+<ul>
+  <li>吊り環・主電源スイッチ・USBホスト</li>
+  <li>7インチLCDタッチスクリーン</li>
+  <li>出力ON/OFFボタン・ロータリーノブ</li>
+</ul>
+<strong>リアパネル（通信）：</strong>外部I/O(TTL)・パラレル・RS-232・USB・LAN・GPIB/CAN<br>
+<strong>リアパネル（電力）：</strong>回路ブレーカー・冷却ファン・入出力端子台（38mm²）<br>
+<strong>ケーブル仕様：</strong>3相38mm² / 1相150mm²（5045）<br>
+<strong>設置前チェックリスト：</strong>6項目 / 電源投入前チェックリスト：5項目`,
+      ko: `<strong>RPS-5000 하드웨어 및 설치</strong><br><br>
+<strong>전면 패널:</strong>
+<ul>
+  <li>리프팅 링·주전원 스위치·USB HOST</li>
+  <li>7인치 LCD 터치스크린</li>
+  <li>출력 ON/OFF 버튼·로터리 노브</li>
+</ul>
+<strong>후면 패널 (통신):</strong> 외부 I/O(TTL)·병렬·RS-232·USB·LAN·GPIB/CAN<br>
+<strong>후면 패널 (전력):</strong> 차단기·냉각팬·입출력 단자대(38mm²)<br>
+<strong>케이블 사양:</strong> 3상 38mm² / 1상 150mm²(5045)<br>
+<strong>설치 전 체크리스트:</strong> 6항목 / 전원 투입 전 체크리스트: 5항목`,
+      zh: `<strong>RPS-5000 硬體與安裝</strong><br><br>
+<strong>前面板：</strong>
+<ul>
+  <li>吊環・主電源開關・USB HOST</li>
+  <li>7 吋 LCD 觸控螢幕</li>
+  <li>輸出 ON/OFF 按鈕・旋鈕</li>
+  <li>固定腳墊・腳輪</li>
+</ul>
+<strong>後面板（通訊）：</strong>外部 I/O(TTL)・並聯（主從）・RS-232・USB Device・LAN・GPIB/CAN<br>
+<strong>後面板（電力）：</strong>斷路器・冷卻風扇・輸入端子台(38mm²)・輸出端子台・遠端感測端子<br>
+<strong>電纜規格：</strong>三相 38mm² / 單相 150mm²（5045 型）<br>
+<strong>安裝前確認清單：</strong>6 項 / 開機前確認清單：5 項`
+    }
+  ],
+
+  // ── LICENSE KEY ──────────────────────────────
+  license: [
+    {
+      id: "license_key",
+      keys: /licen|license key|activation|activate|ライセンス|라이센스|许可|授权/i,
+      en: `<strong>License Key Activation</strong><br>
+License keys unlock advanced functions on the RPS-5000 system.<br><br>
+<strong>Activation methods:</strong>
+<ul>
+  <li>Via <strong>GPIB</strong> connection</li>
+  <li>Via <strong>Ethernet</strong> connection</li>
+</ul>
+<strong>Steps:</strong>
+<ol style="margin:6px 0 6px 18px">
+  <li>Connect PC to RPS-5000 via GPIB or Ethernet</li>
+  <li>Open PowerVUE → navigate to License Key section</li>
+  <li>Enter the license key string provided by InfiniPower</li>
+  <li>Confirm activation — feature will be unlocked immediately</li>
+</ol>
+If you encounter an error during activation, contact:<br>
+📧 brainchiu@infinipowertech.com<br>
+📞 +886-2-25175881`,
+      ja: `<strong>ライセンスキーアクティベーション</strong><br>
+ライセンスキーはRPS-5000の高度な機能を有効にします。<br><br>
+<strong>アクティベーション方法：</strong>GPIB または Ethernet 経由<br><br>
+<strong>手順：</strong>
+<ol style="margin:6px 0 6px 18px">
+  <li>GPIBまたはEthernetでPCとRPS-5000を接続</li>
+  <li>PowerVUEを開き、ライセンスキーセクションへ移動</li>
+  <li>InfiniPowerから提供されたライセンスキーを入力</li>
+  <li>アクティベーション確認 — 機能が即時有効化されます</li>
+</ol>`,
+      ko: `<strong>라이센스 키 활성화</strong><br>
+라이센스 키는 RPS-5000의 고급 기능을 활성화합니다.<br><br>
+<strong>활성화 방법:</strong> GPIB 또는 Ethernet 경유<br><br>
+<strong>절차:</strong>
+<ol style="margin:6px 0 6px 18px">
+  <li>GPIB 또는 Ethernet으로 PC와 RPS-5000 연결</li>
+  <li>PowerVUE 실행 → 라이센스 키 섹션으로 이동</li>
+  <li>InfiniPower에서 제공한 라이센스 키 입력</li>
+  <li>활성화 확인 — 기능이 즉시 활성화됩니다</li>
+</ol>`,
+      zh: `<strong>授權金鑰啟用</strong><br>
+授權金鑰用於解鎖 RPS-5000 的進階功能。<br><br>
+<strong>啟用方式：</strong>透過 GPIB 或 Ethernet 連線<br><br>
+<strong>步驟：</strong>
+<ol style="margin:6px 0 6px 18px">
+  <li>以 GPIB 或 Ethernet 連接 PC 與 RPS-5000</li>
+  <li>開啟 PowerVUE → 進入授權金鑰頁面</li>
+  <li>輸入 InfiniPower 提供的授權金鑰</li>
+  <li>確認啟用 — 功能立即解鎖</li>
+</ol>
+如遇啟用錯誤，請聯繫：<br>
+📧 brainchiu@infinipowertech.com<br>
+📞 +886-2-25175881`
+    }
+  ],
+
+  // ── CONTACT ──────────────────────────────────
+  contact: [
+    {
+      id: "contact_info",
+      keys: /contact|support|email|phone|reach|help|address|連絡|お問い合わせ|문의|联系|联络/i,
+      en: `<strong>Contact InfiniPower</strong><br><br>
+📞 <strong>Phone:</strong> +886-2-25175881<br>
+📧 <strong>Email:</strong> brainchiu@infinipowertech.com<br>
+📍 <strong>Address:</strong> New Taipei City, Taiwan<br><br>
+For technical support, training enrollment (ICP), and sales inquiries, contact us via the above channels. Our team speaks English, Chinese, and Japanese.`,
+      ja: `<strong>InfiniPowerへのお問い合わせ</strong><br><br>
+📞 <strong>電話：</strong>+886-2-25175881<br>
+📧 <strong>メール：</strong>brainchiu@infinipowertech.com<br>
+📍 <strong>住所：</strong>台湾・新北市<br><br>
+技術サポート、ICP研修のお申し込み、製品お見積もりはお気軽にお問い合わせください。`,
+      ko: `<strong>InfiniPower 문의</strong><br><br>
+📞 <strong>전화:</strong> +886-2-25175881<br>
+📧 <strong>이메일:</strong> brainchiu@infinipowertech.com<br>
+📍 <strong>주소:</strong> 대만 신베이시<br><br>
+기술 지원, ICP 교육 등록, 영업 문의 등 언제든지 연락 주세요.`,
+      zh: `<strong>聯繫 InfiniPower</strong><br><br>
+📞 <strong>電話：</strong>+886-2-25175881<br>
+📧 <strong>Email：</strong>brainchiu@infinipowertech.com<br>
+📍 <strong>地址：</strong>台灣新北市<br><br>
+技術支援、ICP 培訓報名、業務諮詢，歡迎隨時聯絡我們。`
+    }
+  ]
+};
+
+// ─────────────────────────────────────────────
+//  LANGUAGE DETECTION
+// ─────────────────────────────────────────────
+function detectLang(text) {
+  if (/[\u3040-\u309F\u30A0-\u30FF]/.test(text)) return 'ja';
+  if (/[\uAC00-\uD7AF\u1100-\u11FF]/.test(text)) return 'ko';
+  if (/[\u4E00-\u9FFF\u3400-\u4DBF]/.test(text)) return 'zh';
+  return 'en';
+}
+
+// ─────────────────────────────────────────────
+//  SEARCH KNOWLEDGE BASE
+// ─────────────────────────────────────────────
+function searchKB(query, lang) {
+  const allEntries = [
+    ...KB.company, ...KB.product, ...KB.specs,
+    ...KB.applications, ...KB.modes, ...KB.waveform,
+    ...KB.powervue, ...KB.training, ...KB.competitive,
+    ...KB.troubleshoot, ...KB.installation, ...KB.license,
+    ...KB.contact
+  ];
+  for (const entry of allEntries) {
+    if (entry.keys.test(query)) {
+      return entry[lang] || entry.en;
+    }
+  }
+  return null;
+}
+
+// ─────────────────────────────────────────────
+//  FALLBACK RESPONSES
+// ─────────────────────────────────────────────
+const FALLBACK = {
+  en: `I'm InfiniPower's FAQ assistant. I can help with:<br>
+<ul>
+  <li>RPS-5000 product specs (G / L / S / B models)</li>
+  <li>Operating modes (CC, CP, LIST, STEP, TRANSIENT…)</li>
+  <li>Waveform & harmonic functions</li>
+  <li>PowerVUE software installation & usage</li>
+  <li>ICP training & certification program</li>
+  <li>Competitive comparison (vs. Chroma, Ametek)</li>
+  <li>Troubleshooting & error codes</li>
+  <li>Installation, wiring & hardware</li>
+  <li>Contact information</li>
+</ul>
+Try asking: <em>"What are the specs of RPS-5045?"</em> or <em>"How do I install PowerVUE?"</em>`,
+  ja: `InfiniPowerのFAQアシスタントです。以下についてお答えできます：<br>
+<ul>
+  <li>RPS-5000製品仕様（G / L / S / Bモデル）</li>
+  <li>動作モード（CC、CP、LIST、STEPなど）</li>
+  <li>波形・高調波機能</li>
+  <li>PowerVUEソフトのインストール・使用方法</li>
+  <li>ICP研修・認定プログラム</li>
+  <li>競合比較（Chroma、Ametek対比）</li>
+  <li>トラブルシューティング・エラーコード</li>
+</ul>
+例：<em>「RPS-5045の仕様を教えてください」</em>`,
+  ko: `InfiniPower FAQ 어시스턴트입니다. 다음 내용을 도와드릴 수 있습니다:<br>
+<ul>
+  <li>RPS-5000 제품 사양 (G / L / S / B 모델)</li>
+  <li>동작 모드 (CC, CP, LIST, STEP 등)</li>
+  <li>파형 및 고조파 기능</li>
+  <li>PowerVUE 소프트웨어 설치 및 사용법</li>
+  <li>ICP 교육 및 인증 프로그램</li>
+  <li>경쟁사 비교 (Chroma, Ametek 대비)</li>
+  <li>고장 진단 및 오류 코드</li>
+</ul>
+예시: <em>"RPS-5045 사양이 어떻게 되나요?"</em>`,
+  zh: `我是 InfiniPower 的 FAQ 助理，可以幫助您了解：<br>
+<ul>
+  <li>RPS-5000 產品規格（G / L / S / B 型號）</li>
+  <li>運行模式（CC、CP、LIST、STEP 等）</li>
+  <li>波形與諧波功能</li>
+  <li>PowerVUE 軟體安裝與使用</li>
+  <li>ICP 培訓與認證計畫</li>
+  <li>競品比較（對比 Chroma、Ametek）</li>
+  <li>故障排除與錯誤碼</li>
+  <li>安裝、接線與硬體說明</li>
+</ul>
+試試問：<em>「RPS-5045 的規格是什麼？」</em>`
+};
+
+// ─────────────────────────────────────────────
+//  SUGGESTIONS
+// ─────────────────────────────────────────────
+const SUGGESTIONS = {
+  en: ["RPS-5000 product overview", "Compare vs Chroma", "PowerVUE install guide", "ICP training courses", "Operating modes (CC/CP/LIST)", "Error codes & troubleshooting"],
+  ja: ["RPS-5000製品概要", "Chromaとの比較", "PowerVUEインストール", "ICP研修プログラム", "動作モード（CC/CP/LIST）", "エラーコードと対処法"],
+  ko: ["RPS-5000 제품 개요", "Chroma 대비 비교", "PowerVUE 설치 가이드", "ICP 교육 프로그램", "동작 모드 (CC/CP/LIST)", "오류 코드 및 트러블슈팅"],
+  zh: ["RPS-5000 產品概覽", "對比 Chroma 競品", "PowerVUE 安裝指南", "ICP 培訓課程", "運行模式（CC/CP/LIST）", "錯誤碼與故障排除"]
+};
+
+// ─────────────────────────────────────────────
+//  WELCOME MESSAGE
+// ─────────────────────────────────────────────
+const WELCOME = {
+  en: `👋 Welcome to <strong>InfiniPower Technical FAQ Assistant</strong>!<br><br>I can answer questions about the <strong>RPS-5000</strong> series (Grid Simulator, Electronic Load, AC Source, Battery Test), <strong>PowerVUE</strong> software, <strong>ICP training</strong>, competitive comparisons, and more.<br><br>I automatically detect your language — feel free to ask in English, 日本語, 한국어, or 中文.`,
+  ja: `👋 <strong>InfiniPower FAQ アシスタント</strong>へようこそ！<br><br>RPS-5000シリーズ・PowerVUE・ICP研修・競合比較などについてお答えします。日本語でお気軽にご質問ください。`,
+  ko: `👋 <strong>InfiniPower FAQ 어시스턴트</strong>에 오신 것을 환영합니다!<br><br>RPS-5000 시리즈, PowerVUE, ICP 교육, 경쟁사 비교 등에 대해 답변해 드립니다. 한국어로 편하게 질문하세요.`,
+  zh: `👋 歡迎使用 <strong>InfiniPower 技術 FAQ 助理</strong>！<br><br>我可以回答有關 RPS-5000 系列（電網模擬器、電子負載、AC 電源、電池測試）、PowerVUE 軟體、ICP 培訓及競品比較等問題。請用中文、英文、日文或韓文提問。`
+};
+
+// ─────────────────────────────────────────────
+//  UI LOGIC
+// ─────────────────────────────────────────────
+let currentLang = 'en';
+
+function renderSuggestions(lang) {
+  const container = document.getElementById('suggestions');
+  container.innerHTML = '';
+  (SUGGESTIONS[lang] || SUGGESTIONS.en).forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'sug-btn';
+    btn.textContent = s;
+    btn.onclick = () => sendMessage(s);
+    container.appendChild(btn);
+  });
+}
+
+function addMessage(html, role, lang) {
+  const box = document.getElementById('chat-box');
+  const msg = document.createElement('div');
+  msg.className = `msg ${role}`;
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = role === 'bot' ? 'IP' : '👤';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = html;
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  box.appendChild(msg);
+  box.scrollTop = box.scrollHeight;
+}
+
+function showTyping() {
+  const box = document.getElementById('chat-box');
+  const msg = document.createElement('div');
+  msg.className = 'msg bot';
+  msg.id = 'typing-indicator';
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = 'IP';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  msg.appendChild(avatar);
+  msg.appendChild(bubble);
+  box.appendChild(msg);
+  box.scrollTop = box.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+async function sendMessage(text) {
+  if (!text.trim()) return;
+  const input = document.getElementById('user-input');
+  input.value = '';
+  input.style.height = 'auto';
+
+  addMessage(text, 'user');
+  showTyping();
+
+  await new Promise(r => setTimeout(r, 480));
+  removeTyping();
+
+  const lang = detectLang(text);
+  currentLang = lang;
+  const answer = searchKB(text, lang) || FALLBACK[lang] || FALLBACK.en;
+  addMessage(answer, 'bot', lang);
+  renderSuggestions(lang);
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  addMessage(WELCOME.en, 'bot', 'en');
+  renderSuggestions('en');
+
+  const input = document.getElementById('user-input');
+  const btn = document.getElementById('send-btn');
+
+  btn.addEventListener('click', () => sendMessage(input.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(input.value);
+    }
+  });
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 110) + 'px';
+  });
+});
+</script>
+</body>
+</html>
