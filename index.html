@@ -34,17 +34,11 @@
     display: flex; align-items: center; gap: 12px;
     flex-shrink: 0; border-bottom: 1px solid var(--sidebar-border);
   }
-  .logo-mark svg { width: 36px; height: 36px; }
-  .logo-text { display: flex; flex-direction: column; line-height: 1; }
-  .logo-name {
-    font-size: 1.1rem; font-weight: 800; letter-spacing: 0.03em;
-    background: var(--grad); -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; background-clip: text;
+  .header-logo-wrap {
+    background: white; border-radius: 8px;
+    padding: 4px 10px; display: flex; align-items: center; flex-shrink: 0;
   }
-  .logo-tagline {
-    font-size: 0.60rem; color: rgba(255,255,255,0.40);
-    letter-spacing: 0.08em; margin-top: 2px;
-  }
+  .header-logo-wrap img { height: 36px; width: auto; display: block; }
   .header-title {
     margin-left: auto; color: rgba(255,255,255,0.50);
     font-size: 0.78rem; font-weight: 500;
@@ -111,14 +105,98 @@
   }
   .sug-item:hover { border-color: var(--green); color: white; background: rgba(60,181,90,0.08); }
 
+  /* ── LIBRARY TRIGGER ─────────────────── */
+  .lib-trigger-section { margin-top: auto; }
+  .lib-trigger-btn {
+    width: 100%; background: rgba(255,255,255,0.05);
+    border: 1px solid var(--sidebar-border);
+    border-radius: 8px; padding: 10px 12px;
+    color: rgba(255,255,255,0.65); font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; transition: all .17s; font-family: inherit;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .lib-trigger-btn:hover { border-color: var(--teal); color: white; background: rgba(15,168,200,0.1); }
+  .lib-arrow { transition: transform .22s; font-size: 1rem; display: inline-block; }
+  .lib-open .lib-arrow { transform: rotate(90deg); }
+
+  /* ── LIBRARY DRAWER ──────────────────── */
+  .lib-drawer {
+    width: 0; overflow: hidden;
+    transition: width .28s cubic-bezier(.4,0,.2,1);
+    background: #0d1520;
+    border-right: 1px solid var(--sidebar-border);
+    display: flex; flex-direction: column; flex-shrink: 0;
+  }
+  .lib-drawer.open { width: 290px; }
+  .lib-drawer-inner { width: 290px; display: flex; flex-direction: column; height: 100%; }
+  .lib-dheader {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--sidebar-border); flex-shrink: 0;
+  }
+  .lib-dheader span { font-size: 0.80rem; font-weight: 700; color: white; letter-spacing: 0.03em; }
+  .lib-close-btn {
+    background: none; border: none; color: rgba(255,255,255,0.40);
+    cursor: pointer; font-size: 16px; line-height: 1;
+    transition: color .15s; padding: 2px 6px; border-radius: 4px;
+  }
+  .lib-close-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+  .lib-scroll { flex: 1; overflow-y: auto; padding: 6px 12px 16px; }
+  .lib-scroll::-webkit-scrollbar { width: 4px; }
+  .lib-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 2px; }
+  .lib-section-label {
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.28); text-transform: uppercase;
+    margin: 14px 0 7px 2px;
+  }
+  .lib-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--sidebar-border);
+    border-radius: 8px; padding: 9px 11px; margin-bottom: 6px;
+    cursor: pointer; transition: all .16s;
+    display: flex; align-items: flex-start; gap: 9px;
+    text-decoration: none;
+  }
+  .lib-card:hover { border-color: var(--teal); background: rgba(15,168,200,0.09); }
+  .lib-card-icon { font-size: 1.05rem; flex-shrink: 0; margin-top: 1px; }
+  .lib-card-info { flex: 1; min-width: 0; }
+  .lib-card-title { font-size: 0.75rem; font-weight: 600; color: white; line-height: 1.3; margin-bottom: 2px; }
+  .lib-card-sub { font-size: 0.66rem; color: rgba(255,255,255,0.38); }
+  .lib-card-badge {
+    font-size: 0.60rem; font-weight: 700; letter-spacing: 0.03em;
+    padding: 1px 6px; border-radius: 8px; flex-shrink: 0; align-self: flex-start; margin-top: 1px;
+  }
+  .badge-ds       { background: rgba(60,181,90,0.20);  color: #5fd47a; }
+  .badge-manual   { background: rgba(15,168,200,0.20); color: #4dd4e8; }
+  .badge-training { background: rgba(26,122,191,0.25); color: #71b4e8; }
+
   /* ── CHAT ────────────────────────────── */
   .chat-wrap {
     flex: 1; display: flex; flex-direction: column;
     overflow: hidden; background: var(--chat-bg);
+    position: relative; transition: background .4s;
   }
+
+  /* Sales background: subtle rising trend lines */
+  body.role-sales .chat-wrap::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120'%3E%3Cpath d='M0 100 L50 75 L100 55 L150 30 L200 10' stroke='%233CB55A' stroke-width='1.2' fill='none' opacity='0.10'/%3E%3Cpath d='M0 115 L50 95 L100 72 L150 50 L200 30' stroke='%230FA8C8' stroke-width='0.8' fill='none' opacity='0.07'/%3E%3C/svg%3E");
+    background-size: 200px 120px;
+  }
+
+  /* Technician background: circuit board grid */
+  body.role-tech .chat-wrap::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='none'/%3E%3Cpath d='M0 30 H22 M38 30 H60 M30 0 V22 M30 38 V60' stroke='%230FA8C8' stroke-width='0.9' opacity='0.11'/%3E%3Ccircle cx='30' cy='30' r='4' fill='none' stroke='%230FA8C8' stroke-width='0.9' opacity='0.11'/%3E%3Cpath d='M8 0 V8 M52 0 V8 M8 60 V52 M52 60 V52' stroke='%233CB55A' stroke-width='0.7' opacity='0.09'/%3E%3C/svg%3E");
+    background-size: 60px 60px;
+  }
+
   #chat-box {
     flex: 1; overflow-y: auto; padding: 20px 20px 8px;
     display: flex; flex-direction: column; gap: 14px;
+    position: relative; z-index: 1;
   }
   .msg { display: flex; gap: 9px; max-width: 88%; animation: fadeUp .22s ease; }
   @keyframes fadeUp {
@@ -182,6 +260,7 @@
     padding: 12px 16px 14px;
     background: white; border-top: 1px solid var(--border);
     display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
+    position: relative; z-index: 1;
   }
   #user-input {
     flex: 1; border: 1.5px solid var(--border); border-radius: 22px;
@@ -200,29 +279,67 @@
   #send-btn:hover { opacity: .88; }
   #send-btn svg { width: 18px; height: 18px; }
 
-  @media (max-width: 680px) { .sidebar { display: none; } }
+  /* ── PK PANEL ────────────────────────── */
+  .pk-panel {
+    position: fixed; bottom: 80px; right: 24px;
+    width: 310px; background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+    z-index: 200; overflow: hidden;
+    animation: pkIn .25s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes pkIn {
+    from { opacity:0; transform: translateY(12px) scale(.97); }
+    to   { opacity:1; transform: translateY(0)    scale(1);   }
+  }
+  .pk-panel.hidden { display: none; }
+  .pk-panel-header {
+    background: var(--dark); padding: 11px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .pk-panel-header span { color: white; font-size: 0.80rem; font-weight: 700; }
+  .pk-panel-close {
+    background: none; border: none; color: rgba(255,255,255,0.50);
+    cursor: pointer; font-size: 16px; line-height: 1;
+    transition: color .15s; padding: 2px 5px; border-radius: 4px;
+  }
+  .pk-panel-close:hover { color: white; }
+  .pk-panel-body { padding: 14px 14px 10px; }
+  .pk-subtitle {
+    font-size: 0.71rem; color: #4b5563; font-weight: 600;
+    margin-bottom: 10px; letter-spacing: 0.01em;
+  }
+  .pk-table { width: 100%; border-collapse: collapse; font-size: 0.79rem; }
+  .pk-table th {
+    padding: 6px 10px; text-align: center; font-weight: 700;
+    font-size: 0.71rem; color: #374151;
+    background: #f3f4f6; border: 1px solid var(--border);
+  }
+  .pk-table th:first-child { text-align: left; }
+  .pk-table td {
+    padding: 7px 10px; text-align: center;
+    border: 1px solid var(--border); color: var(--text);
+  }
+  .pk-table td:first-child { text-align: left; font-weight: 500; font-size: 0.74rem; color: #4b5563; }
+  .pk-win { color: #16a34a; font-weight: 700; }
+  .pk-win-bg { background: #f0fdf4; }
+  .pk-footer {
+    font-size: 0.67rem; color: rgba(26,35,50,0.40);
+    padding: 0 14px 12px; line-height: 1.5;
+  }
+
+  @media (max-width: 680px) {
+    .sidebar { display: none; }
+    .lib-drawer { display: none; }
+  }
 </style>
 </head>
-<body>
+<body class="role-sales">
 
 <header>
-  <div class="logo-mark">
-    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stop-color="#3CB55A"/>
-          <stop offset="50%"  stop-color="#0FA8C8"/>
-          <stop offset="100%" stop-color="#1A7ABF"/>
-        </linearGradient>
-      </defs>
-      <rect x="2"  y="2"  width="36" height="36" rx="9" stroke="url(#lg)" stroke-width="3.5" fill="none"/>
-      <rect x="8"  y="8"  width="24" height="24" rx="6" stroke="url(#lg)" stroke-width="3"   fill="none"/>
-      <rect x="14" y="14" width="12" height="12" rx="3" stroke="url(#lg)" stroke-width="2.5" fill="none"/>
-    </svg>
-  </div>
-  <div class="logo-text">
-    <span class="logo-name">iNFiNiPOWER</span>
-    <span class="logo-tagline">RENEWABLE ENERGY TESTING SOLUTIONS</span>
+  <div class="header-logo-wrap">
+    <img src="logo.png" alt="iNFiNiPOWER">
   </div>
   <span class="header-title">Technical FAQ Assistant</span>
 </header>
@@ -230,7 +347,7 @@
 <div class="main">
 
   <!-- SIDEBAR -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
 
     <div class="sidebar-section">
       <div class="sidebar-label">I am a…</div>
@@ -273,7 +390,27 @@
       <div class="sug-list" id="sug-list"></div>
     </div>
 
+    <div class="sidebar-section lib-trigger-section">
+      <button class="lib-trigger-btn" id="lib-trigger-btn" onclick="toggleLibrary()">
+        <span>📂 Technical Library</span>
+        <span class="lib-arrow" id="lib-arrow">›</span>
+      </button>
+    </div>
+
   </div><!-- /sidebar -->
+
+  <!-- LIBRARY DRAWER -->
+  <div class="lib-drawer" id="lib-drawer">
+    <div class="lib-drawer-inner">
+      <div class="lib-dheader">
+        <span>📚 Technical Library</span>
+        <button class="lib-close-btn" onclick="toggleLibrary()">✕</button>
+      </div>
+      <div class="lib-scroll" id="lib-scroll">
+        <!-- Populated by JS based on current role -->
+      </div>
+    </div>
+  </div>
 
   <!-- CHAT -->
   <div class="chat-wrap">
@@ -288,6 +425,34 @@
     </div>
   </div>
 
+</div>
+
+<!-- PK FLOATING PANEL -->
+<div class="pk-panel hidden" id="pk-panel">
+  <div class="pk-panel-header">
+    <span>⚡ Power Density Comparison</span>
+    <button class="pk-panel-close" onclick="closePK()">✕</button>
+  </div>
+  <div class="pk-panel-body">
+    <div class="pk-subtitle">RPS-5045 vs Chroma 61845 — 45 kVA class</div>
+    <table class="pk-table">
+      <tr>
+        <th>Metric</th>
+        <th>RPS-5045</th>
+        <th>Chroma 61845</th>
+      </tr>
+      <tr>
+        <td>Power Density</td>
+        <td class="pk-win pk-win-bg">70.354 kVA/m²</td>
+        <td>33.156 kVA/m²</td>
+      </tr>
+      <tr>
+        <td>Advantage</td>
+        <td class="pk-win pk-win-bg" colspan="2">2.12× higher density ✅</td>
+      </tr>
+    </table>
+  </div>
+  <div class="pk-footer">Based on published footprint &amp; rated power specifications.</div>
 </div>
 
 <script>
@@ -556,10 +721,38 @@ Issues? 📧 brainchiu@infinipowertech.com`,
 ];
 
 // ═══════════════════════════════════════
+//  LIBRARY CONTENT (per role)
+// ═══════════════════════════════════════
+const LIB_CONTENT = {
+  sales: [
+    { section: 'Datasheets' },
+    { icon: '📄', title: 'RPS-5000 G/S Datasheet', sub: 'Grid Simulator & AC Source', badge: 'DS', badge_class: 'badge-ds', href: '#' },
+    { icon: '📄', title: 'RPS-5000 L Datasheet', sub: 'Bidirectional Electronic Load', badge: 'DS', badge_class: 'badge-ds', href: '#' },
+    { icon: '📄', title: 'PowerVUE Datasheet', sub: 'Software overview & features', badge: 'DS', badge_class: 'badge-ds', href: '#' },
+    { section: 'ICP Partner Training' },
+    { icon: '🎓', title: 'ICP Program Overview', sub: 'Certification levels & benefits', badge: 'Training', badge_class: 'badge-training', href: '#' },
+    { icon: '🎓', title: 'ICP101 — Partner Basic', sub: 'Market & product line intro', badge: 'Training', badge_class: 'badge-training', href: '#' },
+    { icon: '🎓', title: 'ICP102 — Partner Advanced', sub: 'Specs, competitive positioning', badge: 'Training', badge_class: 'badge-training', href: '#' },
+  ],
+  technical: [
+    { section: 'Technical Manuals' },
+    { icon: '📘', title: 'RPS-5000 User Manual V1.3', sub: 'Full operation & reference guide', badge: 'Manual', badge_class: 'badge-manual', href: '#' },
+    { icon: '📘', title: 'PowerVUE User Manual V1.01', sub: 'Software complete reference', badge: 'Manual', badge_class: 'badge-manual', href: '#' },
+    { icon: '📗', title: 'PowerVUE Quick Install Guide', sub: 'Step-by-step setup', badge: 'Manual', badge_class: 'badge-manual', href: '#' },
+    { icon: '📗', title: 'License Key User Manual V1.01', sub: 'Activation & feature unlock', badge: 'Manual', badge_class: 'badge-manual', href: '#' },
+    { section: 'ICP Technical Training' },
+    { icon: '🔧', title: 'ICP201 — Basic Technical', sub: 'UI, startup, phase switching', badge: 'Training', badge_class: 'badge-training', href: '#' },
+    { icon: '🔧', title: 'ICP202 — Advanced Technical', sub: 'Harmonics, slew rate, impedance', badge: 'Training', badge_class: 'badge-training', href: '#' },
+    { icon: '🔧', title: 'ICP203 — Maintenance & Service', sub: 'PCB troubleshooting, service SOP', badge: 'Training', badge_class: 'badge-training', href: '#' },
+  ]
+};
+
+// ═══════════════════════════════════════
 //  STATE & UTILS
 // ═══════════════════════════════════════
 let currentRole = 'sales';
 let currentLang = 'en';
+let libOpen = false;
 
 function detectLang(t) {
   if (/[\u3040-\u309F\u30A0-\u30FF]/.test(t)) return 'ja';
@@ -579,16 +772,79 @@ function searchKB(q, lang) {
   return null;
 }
 
+function isCompetitiveQuery(q) {
+  return /chroma|ametek|compet|versus|compare|竞品|競合|경쟁/i.test(q);
+}
+
+// ═══════════════════════════════════════
+//  ROLE SWITCHING
+// ═══════════════════════════════════════
 function setRole(role) {
   currentRole = role;
-  document.getElementById('btn-sales').classList.toggle('active', role==='sales');
-  document.getElementById('btn-tech').classList.toggle('active',  role==='technical');
+  document.getElementById('btn-sales').classList.toggle('active', role === 'sales');
+  document.getElementById('btn-tech').classList.toggle('active',  role === 'technical');
+
+  // body class for background pattern
+  document.body.classList.toggle('role-sales', role === 'sales');
+  document.body.classList.toggle('role-tech',  role === 'technical');
+
   renderSuggestions(currentLang);
+  if (libOpen) renderLibrary();
+
   const label = role === 'sales' ? '💼 Sales mode' : '🔧 Technician mode';
-  addMsg(`Switched to <strong>${label}</strong>. Answers are now tailored for you.`, 'bot');
+  addMsg(`Switched to <strong>${label}</strong>. Answers and documents are now tailored for you.`, 'bot');
 }
 
 function askModel(m) { sendMessage('Tell me about the ' + m); }
+
+// ═══════════════════════════════════════
+//  LIBRARY DRAWER
+// ═══════════════════════════════════════
+function toggleLibrary() {
+  libOpen = !libOpen;
+  document.getElementById('lib-drawer').classList.toggle('open', libOpen);
+  document.getElementById('lib-arrow').style.transform = libOpen ? 'rotate(90deg)' : '';
+  if (libOpen) renderLibrary();
+}
+
+function renderLibrary() {
+  const scroll = document.getElementById('lib-scroll');
+  const items = LIB_CONTENT[currentRole] || LIB_CONTENT.sales;
+  scroll.innerHTML = '';
+  items.forEach(item => {
+    if (item.section) {
+      const lbl = document.createElement('div');
+      lbl.className = 'lib-section-label';
+      lbl.textContent = item.section;
+      scroll.appendChild(lbl);
+    } else {
+      const a = document.createElement('a');
+      a.className = 'lib-card';
+      a.href = item.href || '#';
+      a.target = item.href && item.href !== '#' ? '_blank' : '_self';
+      a.rel = 'noopener';
+      a.innerHTML = `
+        <span class="lib-card-icon">${item.icon}</span>
+        <div class="lib-card-info">
+          <div class="lib-card-title">${item.title}</div>
+          <div class="lib-card-sub">${item.sub}</div>
+        </div>
+        <span class="lib-card-badge ${item.badge_class}">${item.badge}</span>
+      `;
+      scroll.appendChild(a);
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+//  PK PANEL
+// ═══════════════════════════════════════
+function showPK() {
+  document.getElementById('pk-panel').classList.remove('hidden');
+}
+function closePK() {
+  document.getElementById('pk-panel').classList.add('hidden');
+}
 
 // ═══════════════════════════════════════
 //  SUGGESTIONS
@@ -611,7 +867,7 @@ const SUGS = {
 function renderSuggestions(lang) {
   const list = document.getElementById('sug-list');
   list.innerHTML = '';
-  const items = (SUGS[currentRole]||SUGS.sales)[lang]||(SUGS[currentRole]||SUGS.sales).en;
+  const items = (SUGS[currentRole] || SUGS.sales)[lang] || (SUGS[currentRole] || SUGS.sales).en;
   items.forEach(s => {
     const el = document.createElement('div');
     el.className = 'sug-item'; el.textContent = s;
@@ -662,7 +918,7 @@ function showTyping() {
   msg.appendChild(av); msg.appendChild(bub);
   box.appendChild(msg); box.scrollTop = box.scrollHeight;
 }
-function removeTyping() { const t=document.getElementById('typmsg'); if(t) t.remove(); }
+function removeTyping() { const t = document.getElementById('typmsg'); if (t) t.remove(); }
 
 async function sendMessage(text) {
   if (!text.trim()) return;
@@ -675,6 +931,8 @@ async function sendMessage(text) {
   const ans = searchKB(text, currentLang) || FALLBACK[currentLang] || FALLBACK.en;
   addMsg(ans, 'bot');
   renderSuggestions(currentLang);
+  // Show PK panel on competitive queries
+  if (isCompetitiveQuery(text)) showPK();
 }
 
 // ═══════════════════════════════════════
@@ -690,7 +948,7 @@ Use the <strong>Model Selection Guide</strong> to explore RPS-5030 / 5045 / 5090
   const inp = document.getElementById('user-input');
   document.getElementById('send-btn').addEventListener('click', () => sendMessage(inp.value));
   inp.addEventListener('keydown', e => {
-    if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(inp.value); }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(inp.value); }
   });
   inp.addEventListener('input', () => {
     inp.style.height = 'auto';
