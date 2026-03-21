@@ -329,9 +329,94 @@
     padding: 0 14px 12px; line-height: 1.5;
   }
 
+
+  /* ── FULL-PAGE ROLE THEMING ──────────── */
+  body.role-sales {
+    --sidebar-bg: #0b1d0e;
+    --sidebar-border: #1a3520;
+    --chat-bg: #f0fdf4;
+  }
+  body.role-tech {
+    --sidebar-bg: #070c1a;
+    --sidebar-border: #0c1d35;
+    --chat-bg: #f0f7ff;
+  }
+  body.role-sales header { background: #0d1f10; border-color: #1a3520; }
+  body.role-tech  header { background: #060d1c; border-color: #0c1d35; }
+  body.role-sales .lib-drawer { background: #091209; }
+  body.role-tech  .lib-drawer { background: #060b17; }
+  body.role-sales .input-area { background: #f0fdf4; border-top-color: #d1fae5; }
+  body.role-tech  .input-area { background: #f0f7ff; border-top-color: #dbeafe; }
+
+  /* ── PREVIEW PANEL ───────────────────── */
+  .preview-panel {
+    width: 0; overflow: hidden;
+    transition: width .30s cubic-bezier(.4,0,.2,1);
+    background: #0a1018;
+    border-right: 1px solid var(--sidebar-border);
+    display: flex; flex-direction: column; flex-shrink: 0;
+  }
+  .preview-panel.open { width: 420px; }
+  .preview-inner { width: 420px; display: flex; flex-direction: column; height: 100%; }
+  .preview-pheader {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px; border-bottom: 1px solid var(--sidebar-border);
+    flex-shrink: 0;
+  }
+  .preview-ptitle {
+    flex: 1; color: white; font-size: 0.76rem; font-weight: 700;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .preview-open-link {
+    font-size: 0.68rem; color: var(--teal); text-decoration: none; font-weight: 600;
+    padding: 3px 8px; border-radius: 5px; border: 1px solid rgba(15,168,200,0.3);
+    transition: all .15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .preview-open-link:hover { background: rgba(15,168,200,0.15); color: white; }
+  .preview-close-btn {
+    background: none; border: none; color: rgba(255,255,255,0.40);
+    cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 4px;
+    flex-shrink: 0; transition: color .15s;
+  }
+  .preview-close-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+  #preview-iframe { flex: 1; border: none; width: 100%; }
+
+  /* ── CALC PANEL ──────────────────────── */
+  .calc-panel {
+    position: fixed; bottom: 80px; right: 24px;
+    width: 300px; background: white;
+    border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+    z-index: 200; overflow: hidden;
+    animation: pkIn .25s cubic-bezier(.4,0,.2,1);
+  }
+  .calc-panel.hidden { display: none; }
+  .calc-phdr {
+    background: var(--dark); padding: 11px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .calc-phdr span { color: white; font-size: 0.80rem; font-weight: 700; }
+  .calc-body { padding: 14px; }
+  .calc-desc { font-size: 0.70rem; color: #6b7280; margin-bottom: 12px; line-height: 1.5; }
+  .calc-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .calc-num-input {
+    flex: 1; border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; font-size: 1.0rem; font-family: inherit; outline: none;
+    transition: border .18s;
+  }
+  .calc-num-input::-webkit-inner-spin-button,
+  .calc-num-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .calc-num-input:focus { border-color: var(--teal); }
+  .calc-kva { font-size: 0.82rem; color: #6b7280; font-weight: 600; }
+  .calc-result { min-height: 40px; }
+  .calc-big { font-size: 1.5rem; font-weight: 800; color: var(--teal); }
+  .calc-small { font-size: 0.73rem; color: #6b7280; margin-top: 3px; }
+  .calc-warn { font-size: 0.76rem; color: #dc2626; font-weight: 600; }
+
   @media (max-width: 680px) {
     .sidebar { display: none; }
     .lib-drawer { display: none; }
+    .preview-panel { display: none; }
   }
 </style>
 </head>
@@ -378,7 +463,7 @@
         <div class="mc-kva">90 kVA</div>
         <div class="mc-desc">High-power EV charging stations &amp; grid testing.</div>
       </div>
-      <div class="model-card" onclick="askModel('parallel configuration 225 kVA')">
+      <div class="model-card" onclick="openCalc()">
         <div class="mc-name">Parallel Config</div>
         <div class="mc-kva">Up to 225 kVA</div>
         <div class="mc-desc">5 × RPS-5090 for utility-scale &amp; industrial testing.</div>
@@ -409,6 +494,18 @@
       <div class="lib-scroll" id="lib-scroll">
         <!-- Populated by JS based on current role -->
       </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW PANEL -->
+  <div class="preview-panel" id="preview-panel">
+    <div class="preview-inner">
+      <div class="preview-pheader">
+        <span class="preview-ptitle" id="preview-title">Document Preview</span>
+        <a class="preview-open-link" id="preview-drive-link" href="#" target="_blank" rel="noopener">Open in Drive ↗</a>
+        <button class="preview-close-btn" onclick="closePreview()">✕</button>
+      </div>
+      <iframe id="preview-iframe" src="" allowfullscreen></iframe>
     </div>
   </div>
 
@@ -453,6 +550,23 @@
     </table>
   </div>
   <div class="pk-footer">Based on published footprint &amp; rated power specifications.</div>
+</div>
+
+<!-- CALC FLOATING PANEL -->
+<div class="calc-panel hidden" id="calc-panel">
+  <div class="calc-phdr">
+    <span>⚙️ Parallel Config Calculator</span>
+    <button class="pk-panel-close" onclick="closeCalc()">✕</button>
+  </div>
+  <div class="calc-body">
+    <div class="calc-desc">Enter your required total kVA.<br>Max: 5 × RPS-5090 = <strong>225 kVA</strong></div>
+    <div class="calc-row">
+      <input type="number" id="calc-input" class="calc-num-input" min="1" max="999"
+        placeholder="e.g. 150" oninput="calcUnits()">
+      <span class="calc-kva">kVA</span>
+    </div>
+    <div class="calc-result" id="calc-result"></div>
+  </div>
 </div>
 
 <script>
@@ -726,24 +840,27 @@ Issues? 📧 brainchiu@infinipowertech.com`,
 const LIB_CONTENT = {
   sales: [
     { section: 'Datasheets' },
-    { icon: '📄', title: 'RPS-5000 G/S Datasheet', sub: 'Grid Simulator & AC Source', badge: 'DS', badge_class: 'badge-ds', href: '#' },
-    { icon: '📄', title: 'RPS-5000 L Datasheet', sub: 'Bidirectional Electronic Load', badge: 'DS', badge_class: 'badge-ds', href: '#' },
-    { icon: '📄', title: 'PowerVUE Datasheet', sub: 'Software overview & features', badge: 'DS', badge_class: 'badge-ds', href: '#' },
+    { icon: '📄', title: 'RPS-5000 G/S Datasheet', sub: 'Grid Simulator & AC Source', badge: 'DS', badge_class: 'badge-ds', fileId: '1u9ZRNZmcwB9TIHBNSQCOtxVrFQIfZ5DQ' },
+    { icon: '📄', title: 'RPS-5000 L Datasheet', sub: 'Bidirectional Electronic Load', badge: 'DS', badge_class: 'badge-ds', fileId: '18vvUzC98DGFDqzmGGKMtPriEx0CQH6hX' },
+    { icon: '📄', title: 'PowerVUE Datasheet', sub: 'Software overview & features', badge: 'DS', badge_class: 'badge-ds', fileId: '1djEo2r9TBx85srz6t9fAEIIO2dNz8BC9' },
     { section: 'ICP Partner Training' },
-    { icon: '🎓', title: 'ICP Program Overview', sub: 'Certification levels & benefits', badge: 'Training', badge_class: 'badge-training', href: '#' },
-    { icon: '🎓', title: 'ICP101 — Partner Basic', sub: 'Market & product line intro', badge: 'Training', badge_class: 'badge-training', href: '#' },
-    { icon: '🎓', title: 'ICP102 — Partner Advanced', sub: 'Specs, competitive positioning', badge: 'Training', badge_class: 'badge-training', href: '#' },
+    { icon: '🎓', title: 'ICP Program Overview', sub: 'Certification levels & benefits', badge: 'Training', badge_class: 'badge-training', fileId: '1tarzHLumZvOJ8JjFvzqxrqfcYQyZcNDG' },
+    { icon: '🎓', title: 'ICP101 — Partner Basic', sub: 'Market & product line intro', badge: 'Training', badge_class: 'badge-training', fileId: '1XLYE4yeX0Yp5zgvo5zveduJMsFaYH4lm' },
+    { icon: '🎓', title: 'ICP102 — Partner Advanced', sub: 'Specs, competitive positioning', badge: 'Training', badge_class: 'badge-training', fileId: '1sR0YS2r0te0WDq8f4R7PSKUKXwHgI51Z' },
+    { icon: '🎓', title: 'ICP103 — Startup Demo', sub: 'Basic equipment startup procedure', badge: 'Training', badge_class: 'badge-training', fileId: '1c6arrq67v4chMGfeeKjLuAKQyx7tLUdp' },
+    { section: 'Marketing Materials' },
+    { icon: '📊', title: 'Competitive Intel', sub: 'Full spec comparison vs competitors', badge: 'DS', badge_class: 'badge-ds', fileId: '1aw1lqWsu08EGT4UtcRNWaeuJ94rQ8eBD' },
   ],
   technical: [
     { section: 'Technical Manuals' },
-    { icon: '📘', title: 'RPS-5000 User Manual V1.3', sub: 'Full operation & reference guide', badge: 'Manual', badge_class: 'badge-manual', href: '#' },
-    { icon: '📘', title: 'PowerVUE User Manual V1.01', sub: 'Software complete reference', badge: 'Manual', badge_class: 'badge-manual', href: '#' },
-    { icon: '📗', title: 'PowerVUE Quick Install Guide', sub: 'Step-by-step setup', badge: 'Manual', badge_class: 'badge-manual', href: '#' },
-    { icon: '📗', title: 'License Key User Manual V1.01', sub: 'Activation & feature unlock', badge: 'Manual', badge_class: 'badge-manual', href: '#' },
+    { icon: '📘', title: 'RPS-5000 User Manual V1.3', sub: 'Full operation & reference guide', badge: 'Manual', badge_class: 'badge-manual', fileId: '1rFotOdG39LHFwJpeCesJxHSE1vea052f' },
+    { icon: '📘', title: 'PowerVUE User Manual V1.01', sub: 'Software complete reference', badge: 'Manual', badge_class: 'badge-manual', fileId: '14zE5nyq2gHoVDkcwugbU3iktZ9d2-xnJ' },
+    { icon: '📗', title: 'PowerVUE Quick Install Guide', sub: 'Step-by-step setup', badge: 'Manual', badge_class: 'badge-manual', fileId: '1fXyyokX5IALaYikD7kfxwIJptlQ4laKr' },
+    { icon: '📗', title: 'License Key User Manual V1.01', sub: 'Activation & feature unlock', badge: 'Manual', badge_class: 'badge-manual', fileId: '1r4tUyt3eGQ58HRvfXdgUMB5Omj1Kux1w' },
     { section: 'ICP Technical Training' },
-    { icon: '🔧', title: 'ICP201 — Basic Technical', sub: 'UI, startup, phase switching', badge: 'Training', badge_class: 'badge-training', href: '#' },
-    { icon: '🔧', title: 'ICP202 — Advanced Technical', sub: 'Harmonics, slew rate, impedance', badge: 'Training', badge_class: 'badge-training', href: '#' },
-    { icon: '🔧', title: 'ICP203 — Maintenance & Service', sub: 'PCB troubleshooting, service SOP', badge: 'Training', badge_class: 'badge-training', href: '#' },
+    { icon: '🔧', title: 'ICP201 — Basic Technical', sub: 'UI, startup, phase switching', badge: 'Training', badge_class: 'badge-training', fileId: '1PHwNYjeTgZ0AIf-q-5nk6ZLMFzRXoS5W' },
+    { icon: '🔧', title: 'ICP202 — Advanced Technical', sub: 'Harmonics, slew rate, impedance', badge: 'Training', badge_class: 'badge-training', fileId: '1fcP4F1Nx2_ec9HfW3fDzxWDehmqtn2Ns' },
+    { icon: '🔧', title: 'ICP203 — Maintenance & Service', sub: 'PCB troubleshooting, service SOP', badge: 'Training', badge_class: 'badge-training', fileId: '1nYk5zZUS2UXHOkUpmWkZES6iiTDbVsEK' },
   ]
 };
 
@@ -798,6 +915,60 @@ function setRole(role) {
 function askModel(m) { sendMessage('Tell me about the ' + m); }
 
 // ═══════════════════════════════════════
+//  PREVIEW PANEL
+// ═══════════════════════════════════════
+let previewOpen = false;
+
+function openPreview(fileId, title) {
+  document.getElementById('preview-title').textContent = title;
+  document.getElementById('preview-iframe').src =
+    'https://drive.google.com/file/d/' + fileId + '/preview';
+  document.getElementById('preview-drive-link').href =
+    'https://drive.google.com/file/d/' + fileId + '/view';
+  document.getElementById('preview-panel').classList.add('open');
+  previewOpen = true;
+}
+
+function closePreview() {
+  document.getElementById('preview-panel').classList.remove('open');
+  document.getElementById('preview-iframe').src = '';
+  previewOpen = false;
+}
+
+// ═══════════════════════════════════════
+//  CALC PANEL
+// ═══════════════════════════════════════
+function openCalc() {
+  document.getElementById('calc-panel').classList.remove('hidden');
+  document.getElementById('calc-input').value = '';
+  document.getElementById('calc-result').innerHTML = '';
+  setTimeout(() => document.getElementById('calc-input').focus(), 120);
+}
+
+function closeCalc() {
+  document.getElementById('calc-panel').classList.add('hidden');
+}
+
+function calcUnits() {
+  const kva = parseFloat(document.getElementById('calc-input').value);
+  const res = document.getElementById('calc-result');
+  if (!kva || kva <= 0) { res.innerHTML = ''; return; }
+  if (kva > 225) {
+    res.innerHTML = '<div class="calc-warn">⚠️ Exceeds max 225 kVA (5 units)</div>';
+    return;
+  }
+  const units = Math.min(Math.ceil(kva / 90), 5);
+  const achievable = units * 90;
+  const headroom = achievable - kva;
+  res.innerHTML =
+    '<div><span class="calc-big">' + units + '</span>' +
+    ' <span style="font-size:0.85rem;color:#374151;font-weight:600;">× RPS-5090' +
+    (units > 1 ? ' units' : ' unit') + '</span></div>' +
+    '<div class="calc-small">Delivers <strong>' + achievable + ' kVA</strong>' +
+    (headroom > 0 ? ' · ' + headroom + ' kVA headroom' : ' · exact match') + '</div>';
+}
+
+// ═══════════════════════════════════════
 //  LIBRARY DRAWER
 // ═══════════════════════════════════════
 function toggleLibrary() {
@@ -805,6 +976,7 @@ function toggleLibrary() {
   document.getElementById('lib-drawer').classList.toggle('open', libOpen);
   document.getElementById('lib-arrow').style.transform = libOpen ? 'rotate(90deg)' : '';
   if (libOpen) renderLibrary();
+  if (!libOpen) closePreview();
 }
 
 function renderLibrary() {
@@ -820,9 +992,13 @@ function renderLibrary() {
     } else {
       const a = document.createElement('a');
       a.className = 'lib-card';
-      a.href = item.href || '#';
-      a.target = item.href && item.href !== '#' ? '_blank' : '_self';
+      a.href = '#';
       a.rel = 'noopener';
+      if (item.fileId) {
+        a.onclick = (e) => { e.preventDefault(); openPreview(item.fileId, item.title); };
+      } else {
+        a.onclick = (e) => e.preventDefault();
+      }
       a.innerHTML = `
         <span class="lib-card-icon">${item.icon}</span>
         <div class="lib-card-info">
