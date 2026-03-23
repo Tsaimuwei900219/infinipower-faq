@@ -1101,13 +1101,44 @@ async function sendMessage(text) {
   const inp = document.getElementById('user-input');
   inp.value = ''; inp.style.height = 'auto';
   addMsg(text, 'user'); showTyping();
-  await new Promise(r => setTimeout(r, 480));
-  removeTyping();
   currentLang = detectLang(text);
-  const ans = searchKB(text, currentLang) || FALLBACK[currentLang] || FALLBACK.en;
-  addMsg(ans, 'bot');
+
+  // 先查本地 KB（瞬間回答常見問題）
+  const localAns = searchKB(text, currentLang);
+  if (localAns) {
+    await new Promise(r => setTimeout(r, 360));
+    removeTyping();
+    addMsg(localAns, 'bot');
+    renderSuggestions(currentLang);
+    if (isCompetitiveQuery(text)) showPK();
+    return;
+  }
+
+  // 本地 KB 沒有 → 呼叫 Claude API
+  try {
+    const res = await fetch('/.netlify/functions/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, role: currentRole, lang: currentLang })
+    });
+    const data = await res.json();
+    removeTyping();
+    if (data.reply) {
+      // 把換行符轉成 <br> 讓排版正確
+      const html = data.reply
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+      addMsg(html, 'bot');
+    } else {
+      addMsg(FALLBACK[currentLang] || FALLBACK.en, 'bot');
+    }
+  } catch (err) {
+    removeTyping();
+    addMsg('⚠️ Connection error. Please try again.', 'bot');
+  }
+
   renderSuggestions(currentLang);
-  // Show PK panel on competitive queries
   if (isCompetitiveQuery(text)) showPK();
 }
 
